@@ -1,0 +1,7 @@
+Hed is going to be used as a tool to learn Haskell . I am writing the first
+version knowing little about monads outside of the IO monad.
+
+The first version will work with xterms. The second version will hopefully
+work with gtk.
+
+I will look into acid-state and mysql-simple
