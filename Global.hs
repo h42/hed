@@ -18,8 +18,7 @@ module Global (
 
 import System.IO
 import Data.Maybe
-import qualified Data.ByteString as B
-import qualified Data.ByteString.UTF8 as U
+import qualified Data.Text as T
 
 import Ffi
 
@@ -27,8 +26,8 @@ import Ffi
 --maybeRead = fmap fst . listToMaybe . filter (null . snd) . reads
 
 infixr 5 +++
-(+++) :: B.ByteString -> B.ByteString -> B.ByteString
-a +++ b = B.append a b
+(+++) :: T.Text -> T.Text -> T.Text
+a +++ b = T.append a b
 
 data Global = Global {
     zx :: Int
@@ -36,8 +35,8 @@ data Global = Global {
     ,zrc :: Int
     ,zbuf :: String
     ,zbufl :: Int
-    ,zlist :: [B.ByteString]
-    ,zkplist :: [B.ByteString]
+    ,zlist :: [T.Text]
+    ,zkplist :: [T.Text]
     ,zcur :: Int
     ,zupd :: Int
     ,zupd2 :: Int
@@ -101,26 +100,26 @@ initGlobal = Global {
 }
 
 getrows :: Int -> Int -> Global -> [String]
-getrows  y l g = map U.toString (take l $ drop (y) (zlist g))
+getrows  y l g = map T.unpack (take l $ drop (y) (zlist g))
 
-getByteRows :: Int -> Int -> Global -> [B.ByteString]
+getByteRows :: Int -> Int -> Global -> [T.Text]
 getByteRows  y l g = take l $ drop (y) (zlist g)
 
 getrow :: Int -> Global -> String
-getrow  y g = U.toString $ (zlist g) !! y
+getrow  y g = T.unpack $ (zlist g) !! y
 
 updrow :: Int -> String -> Global -> Global
-updrow y s g = g{zlist=(take (y) (zlist g)) ++ [U.fromString s] ++ (drop (y+1) (zlist g))}
+updrow y s g = g{zlist=(take (y) (zlist g)) ++ [T.pack s] ++ (drop (y+1) (zlist g))}
 
 insrow :: Int -> String -> Global -> Global
 insrow y s g = insrows y 1 [s] g
 
 insrows :: Int -> Int -> [String] -> Global -> Global
 insrows y cnt ks g =
-    g{zlist=(take (y) (zlist g)) ++ (map U.fromString ks) ++ (drop y (zlist g))
+    g{zlist=(take (y) (zlist g)) ++ (map T.pack ks) ++ (drop y (zlist g))
 		,zlines=zlines g + cnt}
 
-insByteRows :: Int -> Int -> [B.ByteString] -> Global -> Global
+insByteRows :: Int -> Int -> [T.Text] -> Global -> Global
 insByteRows y cnt ks g = g{zlist=(take (y) (zlist g)) ++ ks
 			   ++ (drop y (zlist g)), zlines=zlines g + cnt}
 

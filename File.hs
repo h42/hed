@@ -30,16 +30,15 @@ import Ffi
 import System.Environment
 import System.Cmd
 import Control.Monad
-import qualified Data.ByteString as B
-import qualified Data.ByteString.Char8 as C
-import qualified Data.ByteString.UTF8 as U
+import qualified Data.Text as T
+import qualified Data.Text.IO as T2
 
 ---------------------------------------------------------
 -- New - not really a file but no better place for it
 ---------------------------------------------------------
 newf :: Global -> IO Global
 newf g = chk_winsize initGlobal
-    {zmsg="new",zlist=[""],zlines=1,zhistory=zhistory g,zkplist=zkplist g}
+    {zmsg="",zlist=[T.empty],zlines=1,zhistory=zhistory g,zkplist=zkplist g}
 
 ---------------------------------------------------------
 -- Swap
@@ -101,7 +100,7 @@ load2 fn g = do
     h <- openFile fn ReadMode
     let msg = if zaccess g == 1 then fn ++ " READ ONLY" else fn
     -- Use strict ByteString to avoid short lazy read
-    recs <- fmap (U.lines) $ B.hGetContents h
+    recs <- fmap (T.lines) $ T2.hGetContents h
     hClose h
 
     p <- getFileMode fn
@@ -149,7 +148,7 @@ saveorig g
 
 savef' g = do
     g' <- pline g
-    B.writeFile (zfn g') (C.unlines (zlist g'))
+    T2.writeFile (zfn g') (T.unlines (zlist g'))
     if (zstmode g') /= 0
 	then Ffi.setFileMode (zfn g') (zstmode g') 
 	else return 0
