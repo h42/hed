@@ -120,9 +120,9 @@ cntl_ks g
 	pline g{zmsg="block saved",zkplist=getByteRows (zky1 g) l g}
 
 cntl_kp g
-    | zkplist g == [] = return g{zmsg="nothing to paste"}
+    | zkplist g == emptyZlist = return g{zmsg="nothing to paste"}
     | otherwise = do
-	let l = length (zkplist g)
+	let l = lengthZlist (zkplist g)
 	    g' = insByteRows (zy g + 1) l (zkplist g) g
 	return g'{zpager=True,zky1=zy g+1,zky2=zy g + l,
 		  zupd2=1,zmsg="block pasted" }

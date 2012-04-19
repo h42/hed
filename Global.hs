@@ -1,7 +1,6 @@
 module Global (
     Global(..)
     ,initGlobal
-    ,(+++)
     ,getByteRows
     ,getrows
     ,getrow
@@ -14,20 +13,31 @@ module Global (
     ,inkblk
     ,inkblkc
     ,History(..)
+    ,toZlist
+    ,fromZlist
+    ,emptyZlist
+    ,lengthZlist
     ) where
 
 import System.IO
 import Data.Maybe
 import qualified Data.Text as T
-
+import qualified Data.Sequence as S
+import Data.Foldable
 import Ffi
+
+-- make rest of program agnostic to zlist type
+fromZlist :: S.Seq T.Text -> [T.Text]
+fromZlist s = toList s
+
+toZlist :: [T.Text] -> S.Seq T.Text
+toZlist ts = S.fromList ts
+
+emptyZlist = S.empty
+lengthZlist s = S.length s
 
 --maybeRead :: Read a => String -> Maybe a
 --maybeRead = fmap fst . listToMaybe . filter (null . snd) . reads
-
-infixr 5 +++
-(+++) :: T.Text -> T.Text -> T.Text
-a +++ b = T.append a b
 
 data Global = Global {
     zx :: Int
@@ -35,8 +45,10 @@ data Global = Global {
     ,zrc :: Int
     ,zbuf :: String
     ,zbufl :: Int
-    ,zlist :: [T.Text]
-    ,zkplist :: [T.Text]
+    -- ,zlist :: [T.Text]
+    -- ,zkplist :: [T.Text]
+    ,zlist :: S.Seq T.Text
+    ,zkplist :: S.Seq T.Text
     ,zcur :: Int
     ,zupd :: Int
     ,zupd2 :: Int
@@ -70,8 +82,8 @@ initGlobal = Global {
     ,zrc = 0
     ,zbuf = ""
     ,zbufl = 0
-    ,zlist = []
-    ,zkplist = []
+    ,zlist = S.empty
+    ,zkplist = S.empty
     ,zcur = -1
     ,zupd = 0
     ,zupd2 = 0
@@ -100,34 +112,34 @@ initGlobal = Global {
 }
 
 getrows :: Int -> Int -> Global -> [String]
-getrows  y l g = map T.unpack (take l $ drop (y) (zlist g))
+getrows  y l g = map T.unpack (toList $ S.take l $ S.drop (y) (zlist g))
 
-getByteRows :: Int -> Int -> Global -> [T.Text]
-getByteRows  y l g = take l $ drop (y) (zlist g)
+getByteRows :: Int -> Int -> Global -> S.Seq T.Text
+getByteRows  y l g = S.take l $ S.drop (y) (zlist g)
 
 getrow :: Int -> Global -> String
-getrow  y g = T.unpack $ (zlist g) !! y
+getrow  y g = T.unpack $ S.index (zlist g) y
 
 updrow :: Int -> String -> Global -> Global
-updrow y s g = g{zlist=(take (y) (zlist g)) ++ [T.pack s] ++ (drop (y+1) (zlist g))}
+updrow y s g = g{zlist= S.update y (T.pack s) (zlist g) }
 
 insrow :: Int -> String -> Global -> Global
 insrow y s g = insrows y 1 [s] g
 
 insrows :: Int -> Int -> [String] -> Global -> Global
-insrows y cnt ks g =
-    g{zlist=(take (y) (zlist g)) ++ (map T.pack ks) ++ (drop y (zlist g))
-		,zlines=zlines g + cnt}
+insrows y cnt ks g = g{zlist=(S.take (y) (zlist g))
+			 S.>< S.fromList (map T.pack ks)
+			 S.>< (S.drop y (zlist g))  ,zlines=zlines g + cnt}
 
-insByteRows :: Int -> Int -> [T.Text] -> Global -> Global
-insByteRows y cnt ks g = g{zlist=(take (y) (zlist g)) ++ ks
-			   ++ (drop y (zlist g)), zlines=zlines g + cnt}
+insByteRows :: Int -> Int -> S.Seq T.Text -> Global -> Global
+insByteRows y cnt ks g = g{zlist=(S.take (y) (zlist g)) S.>< ks
+			   S.>< (S.drop y (zlist g)), zlines=zlines g + cnt}
 
 delrow :: Int -> Global -> Global
 delrow y g = delrows y 1 g
 
 delrows :: Int -> Int -> Global -> Global
-delrows y cnt g = g{zlist= (take (y) (zlist g)) ++ (drop (y+cnt) (zlist g))
+delrows y cnt g = g{zlist= (S.take (y) (zlist g)) S.>< (S.drop (y+cnt) (zlist g))
 	      ,zlines=zlines g - cnt}
 
 --

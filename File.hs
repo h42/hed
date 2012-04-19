@@ -38,7 +38,7 @@ import qualified Data.Text.IO as T2
 ---------------------------------------------------------
 newf :: Global -> IO Global
 newf g = chk_winsize initGlobal
-    {zmsg="",zlist=[T.empty],zlines=1,zhistory=zhistory g,zkplist=zkplist g}
+    {zmsg="",zlist=emptyZlist,zlines=1,zhistory=zhistory g,zkplist=zkplist g}
 
 ---------------------------------------------------------
 -- Swap
@@ -104,7 +104,8 @@ load2 fn g = do
     hClose h
 
     p <- getFileMode fn
-    chk_winsize initGlobal{zfn=fn,zmsg=msg,zlist=recs,zlines=length recs,
+    chk_winsize initGlobal{zfn=fn,zmsg=msg,zlist=toZlist recs,
+		zlines=length recs,
 		zaccess=zaccess g,zhistory=zhistory g,zpager=True,
 		zkplist=zkplist g,zstmode=p}
 	>>= fromHistory  >>= addHistory >>= gline
@@ -148,7 +149,7 @@ saveorig g
 
 savef' g = do
     g' <- pline g
-    T2.writeFile (zfn g') (T.unlines (zlist g'))
+    T2.writeFile (zfn g') (T.unlines $ fromZlist (zlist g'))
     if (zstmode g') /= 0
 	then Ffi.setFileMode (zfn g') (zstmode g') 
 	else return 0
