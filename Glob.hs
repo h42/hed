@@ -18,7 +18,6 @@ import Foreign
 import Data.IORef
 import System.Directory (doesDirectoryExist, doesFileExist,
 			 getCurrentDirectory, getDirectoryContents)
---import qualified Data.ByteString.Char8 as B
 
 data Glob = GlobC Char
 	    | GlobSet String
