@@ -33,7 +33,7 @@ fromZlist s = toList s
 toZlist :: [T.Text] -> S.Seq T.Text
 toZlist ts = S.fromList ts
 
-emptyZlist = S.empty
+emptyZlist = S.singleton (T.pack "") -- use singleton to avoid index error
 lengthZlist s = S.length s
 
 --maybeRead :: Read a => String -> Maybe a
