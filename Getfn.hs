@@ -21,7 +21,7 @@ getfn rows glob = do
 
 getfns glob = do
     fns <- dirList "" ""
-    return $ sort $
+    return $ sortBy (\x y -> compare (map toLower x) (map toLower y)) $
 	filter (\x -> if glob == [[]] then True else checkfn glob x) fns
 
 checkfn glob fn = any (\x -> drop (length fn - length x) fn == x) glob
@@ -64,22 +64,20 @@ getcmd s = do
 	KeyChar '.' -> return ['.']
 	KeyCntl 'j' -> return s
 	KeyChar n -> do
-	    if isDigit n
-		then putChar n >> hFlush stdout >> getcmd (s++[n])
-		else getcmd s
+	    if isDigit n  then putChar n >> hFlush stdout >> getcmd (s++[n])
+	    else getcmd s
 	KeyBs -> do
-	    if s /= "" 
-		then putStr "\x08 \x08" >> hFlush stdout >> getcmd (init s)
-		else getcmd s
+	    if s /= ""  then putStr "\x08 \x08" >> hFlush stdout >> getcmd (init s)
+	    else  getcmd s
 	_ -> return ""
 
 -------------------------------
 -- DIR.HS
 -------------------------------
-catdir d1 d2 =
-    if (d1 == "" || d1 == "./")
-	then d2
-	else if last d1 == '/'  then d1 ++ d2  else d1 ++ "/" ++ d2
+catdir d1 d2
+    | d1 == "" || d1 == "./"   =  d2
+    | last d1 == '/'           =  d1 ++ d2
+    | otherwise                =  d1 ++ "/" ++ d2
 
 getconts d = do
     fs <- getDirectoryContents (d)
@@ -87,18 +85,17 @@ getconts d = do
 
 dirList ::  FilePath -> String -> IO [FilePath]
 dirList dir' re = do
-    let dir = if dir' == "" then "./" else dir'
+    let dir  =  if dir' == ""  then "./"  else dir'
     gotdir <- doesDirectoryExist dir
-    if not gotdir 
-	then return [] 
-	else do          
-	    fs <-getconts dir
-	    locdir dir fs
+    if not gotdir then return []
+    else do          
+	fs <-getconts dir
+	locdir dir fs
 
 locdir :: FilePath -> [FilePath] -> IO [FilePath]
 locdir d [] = return []
 locdir d (f:fs)= do
     gotfile <- (doesFileExist $ catdir d f)
     fnl <- locdir d fs
-    return $ if gotfile then (catdir d f) : fnl else fnl
+    return $ if gotfile then (catdir d f) : fnl  else fnl
 
