@@ -1,0 +1,7 @@
+.git
+*.o
+*.hi
+hed
+kb
+temp*
+utf8*
