@@ -100,7 +100,8 @@ cntl_kc g
 cntl_kc1 g = do
     let l = zkx2 g - zkx1 g + 1
 	b = take l (drop (zkx1 g) (gline2 (zky1 g) g))
-	b2 = take (zx g) (zbuf g) ++ b ++ (drop (zx g) (zbuf g))
+	-- repeat ' ' necessary for zx > zbufl
+	b2 = take (zx g) (zbuf g ++ repeat ' ') ++ b ++ (drop (zx g) (zbuf g))
     gline g{zbuf=b2,zkx1=zx g,zkx2=zx g+l-1,zky1=zy g,zky2=zy g,
 	    zbufl=zbufl g+l,zpager=True}
 
@@ -159,24 +160,20 @@ cntl_kv g
     | zkh g == 2 || zky1 g /= zky2 g = pline g{zupd2=1} >>= cntl_kv2 >>= gline
     | zky1 g == zky2 g && zky1 g == zy g && (zx g >= zkx1 g && zx g <= zkx2 g) =
 	 return g{zmsg="Block not moved"}
+
     | zky1 g == zky2 g && zy g == zky1 g = glineup g >>= cntl_kv1a
     | zky1 g == zky2 g = pline g >>= glineup >>= cntl_kv1b
+
     | zy g >= zky1 g -1 && zy g <= zky2 g = return g{zmsg="block not moved"}
     | otherwise = return g{zmsg="block not moved"}
-
-substr [] pos len = []
-substr (s:sx) 0 0 = []
-substr (s:sx) 0 len = s : substr sx 0 (len-1)
-substr (s:sx) pos len = substr sx (pos-1) len
 
 cntl_kv1a g = do
     let l = zkx2 g - zkx1 g + 1
 	x = if zx g < zkx1 g then zx g else zx g - l
-	--kblk = substr (zbuf g) (zkx1 g) l
 	kblk = take l (drop (zkx1 g) (zbuf g))
 	blk0 = take (zkx1 g) (zbuf g) ++ drop (zkx2 g + 1) (zbuf g)
-	b = take x blk0 ++ kblk ++ (drop x blk0)
-    return g{zbuf=b,zx=x,zkx1=x,zkx2=x+l-1,zpager=True}
+	b = take x (blk0 ++ repeat ' ') ++ kblk ++ (drop x blk0)
+    return g{zbuf=b, zbufl=length b, zx=x, zkx1=x, zkx2=x+l-1, zpager=True}
 
 cntl_kv1b g = do
     let b = gline2 (zky1 g) g
@@ -184,7 +181,8 @@ cntl_kv1b g = do
 	kblk = take l (drop (zkx1 g) b)
 	b2 = (take (zkx1 g) b) ++ (drop (zkx2 g+1) b)
 	g2 = pline2 (zky1 g) b2 g
-	buf = take (zx g) (zbuf g) ++ kblk ++ (drop (zx g) (zbuf g))
+	-- repeat ' ' necessary for zx > zbufl
+	buf = take (zx g) (zbuf g ++ repeat ' ') ++ kblk ++ (drop (zx g) (zbuf g))
     return g2{zbuf=buf, zbufl=length buf,
 	zky1=zy g, zky2=zy g, zkx1=zx g, zkx2=zx g + l - 1,zpager=True}
 
