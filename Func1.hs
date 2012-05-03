@@ -52,7 +52,9 @@ upoff g
 firstnb_r (-1) g = 0
 firstnb_r y g = x where
     buf = if y == zcur g then zbuf g else  gline2 y g
-    x = case (findIndex (/=' ') buf) of Just x' -> x' ; Nothing -> 0
+    x = case (findIndex (/=' ') buf) of
+	    Just x' -> x'
+	    Nothing -> firstnb_r (y-1) g
 
 firstnb y g = x where
     buf = if y == zcur g then zbuf g else  gline2 y g
@@ -73,12 +75,12 @@ enter g
 
 split_line g = do
     let s = take (zx g) (zbuf g)
-	xadd = firstnb_r (zy g) g
+	xadd = firstnb (zy g) g
 	s2 = replicate xadd ' ' ++ drop (zx g) (zbuf g)
     g2 <- k_split_line xadd g -- must come before pline
     pline g2{zbuf=s,zbufl=length s,zupd=1,zupd2=1,zpager=True}
-	>>= (return . insrow (zy g2+1 ) s2)
-	>>= homer  >>= down
+	>>= (return . insrow (zy g2+1 ) s2) >>= homer  >>= down
+	>>= \g' -> return g'{zx=xadd}
 
 -- GO
 go g' =  do
@@ -171,7 +173,7 @@ del_line' g
 ins_line g = pline g >>= k_ins_line (zy g + 1) >>= ins_line2
 ins_line2 g = do
     let g' = insrow (zy g+1 ) "" g
-        x = firstnb_r (zy g) g
+	x = firstnb (zy g) g
     vupd g'{zy=zy g + 1,zx=x,zoff=0,zpager=True}  >>= glineup
 
 -- TAB_CHAR
