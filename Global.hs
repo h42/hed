@@ -59,6 +59,7 @@ data Global = Global {
     ,zmaxy :: Int
     ,zmaxx :: Int
     ,zmsg :: String
+    ,zindentnl :: Bool
     ,zaccess :: Int
     ,zfn :: String
     ,zfnsaved :: Int
@@ -94,6 +95,7 @@ initGlobal = Global {
     ,zmaxy = 24
     ,zmaxx = 80
     ,zmsg = ""
+    ,zindentnl = True
     ,zaccess = 0
     ,zfn = ""
     ,zfnsaved = 0

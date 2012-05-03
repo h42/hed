@@ -173,7 +173,7 @@ del_line' g
 ins_line g = pline g >>= k_ins_line (zy g + 1) >>= ins_line2
 ins_line2 g = do
     let g' = insrow (zy g+1 ) "" g
-	x = firstnb (zy g) g
+	x = if (zindentnl g)  then firstnb (zy g) g  else 0
     vupd g'{zy=zy g + 1,zx=x,zoff=0,zpager=True}  >>= glineup
 
 -- TAB_CHAR
@@ -330,6 +330,10 @@ toggleCase' g
 	let c  = (zbuf g) !! (zx g)
 	add_char (if isLower c then toUpper c else toLower c) g 
 
+toggleIndent g = return g{zindentnl=ind, zmsg=msg} where
+    ind = not $ zindentnl g
+    msg = "indent set to " ++ show ind
+
 -------------------------------
 -- CNTL_X
 -------------------------------
@@ -345,6 +349,7 @@ cntl_x' c g = do
     case toLower c of
 	'c' -> initChange g
 	'f' -> initFind (if isLower c then 1 else 0) g
+	'i' -> toggleIndent g
 	'x' -> toggleCase g
 	_   -> return g{zmsg="Unknown x function"}
 
