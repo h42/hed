@@ -30,8 +30,9 @@ import Ffi
 import System.Environment
 import System.Cmd
 import Control.Monad
-import qualified Data.Text as T
-import qualified Data.Text.IO as T2
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as C
+import qualified Data.ByteString.UTF8 as U
 
 ---------------------------------------------------------
 -- New - not really a file but no better place for it
@@ -100,7 +101,7 @@ load2 fn g = do
     h <- openFile fn ReadMode
     let msg = if zaccess g == 1 then fn ++ " READ ONLY" else fn
     -- Use strict ByteString to avoid short lazy read
-    recs <- fmap (T.lines) $ T2.hGetContents h
+    recs <- fmap (U.lines) $ B.hGetContents h
     hClose h
 
     p <- getFileMode fn
@@ -149,7 +150,7 @@ saveorig g
 
 savef' g = do
     g' <- pline g
-    T2.writeFile (zfn g') (T.unlines $ fromZlist (zlist g'))
+    B.writeFile (zfn g') (C.unlines $ fromZlist (zlist g'))
     if (zstmode g') /= 0
 	then Ffi.setFileMode (zfn g') (zstmode g') 
 	else return 0
@@ -175,15 +176,7 @@ maybeRead = fmap fst . listToMaybe . filter (null . snd) . reads
 getHistoryFn = do
     cdir <- getCurrentDirectory
     let fn = map (\x -> if x == '/' then '_' else x) cdir
-    homeFile2 fn
-
-homeFile2 fn = do
-    home <- catch (getEnv "HOME") (\e -> return "")
-    case home of
-	"" -> return ""
-	_  -> do
-	    system $ "mkdir -p " ++ home ++ "/.hed"
-	    return ( home ++ "/.hed/" ++ fn)
+    homeFile fn
 
 addHistory g = do
     let h = mkHistory g
