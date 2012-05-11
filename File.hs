@@ -108,6 +108,7 @@ load2 fn g = do
     chk_winsize initGlobal{zfn=fn,zmsg=msg,zlist=toZlist recs,
 		zlines=length recs,
 		zaccess=zaccess g,zhistory=zhistory g,zpager=True,
+		zfind=zfind g, zchange=zchange g,
 		zkplist=zkplist g,zstmode=p}
 	>>= fromHistory  >>= addHistory >>= gline
 
