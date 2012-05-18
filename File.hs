@@ -17,6 +17,7 @@ module File (
 
 import Global
 import GetKB
+import Func1
 import Data.Char
 import Data.Maybe
 import Func0
@@ -110,7 +111,10 @@ load2 fn g = do
 		zaccess=zaccess g,zhistory=zhistory g,zpager=True,
 		zfind=zfind g, zchange=zchange g,
 		zkplist=zkplist g,zstmode=p}
-	>>= fromHistory  >>= addHistory >>= gline
+	>>= fromHistory  >>= addHistory >>= chkBottom >>= gline
+
+chkBottom g = if zy g < zlines g then return g
+	      else bottom g
 
 ---------------------------------------------------------
 -- Checkupd
