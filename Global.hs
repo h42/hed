@@ -139,8 +139,13 @@ delrow :: Int -> Global -> Global
 delrow y g = delrows y 1 g
 
 delrows :: Int -> Int -> Global -> Global
-delrows y cnt g = g{zlist= (S.take (y) (zlist g)) S.>< (S.drop (y+cnt) (zlist g))
-	      ,zlines=zlines g - cnt}
+delrows y cnt g = delrows2
+    g{zlist= (S.take (y) (zlist g)) S.>< (S.drop (y+cnt) (zlist g))
+      ,zlines=zlines g - cnt}
+
+delrows2 g =
+    if zlines g > 0  then g
+    else g{zx=0,zy=0,zoff=0,ztop=0,zlist=emptyZlist,zlines=1,zpager=True}
 
 --
 -- KBLK
