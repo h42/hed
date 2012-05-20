@@ -21,19 +21,19 @@ module Global (
 
 import System.IO
 import Data.Maybe
-import qualified Data.ByteString.UTF8 as U
+import qualified Data.Text as T
 import qualified Data.Sequence as S
 import Data.Foldable
 import Ffi
 
 -- make rest of program agnostic to zlist type
-fromZlist :: S.Seq U.ByteString -> [U.ByteString]
+fromZlist :: S.Seq T.Text -> [T.Text]
 fromZlist s = toList s
 
-toZlist :: [U.ByteString] -> S.Seq U.ByteString
+toZlist :: [T.Text] -> S.Seq T.Text
 toZlist ts = S.fromList ts
 
-emptyZlist = S.singleton (U.fromString "") -- use singleton to avoid index error
+emptyZlist = S.singleton (T.pack "") -- use singleton to avoid index error
 lengthZlist s = S.length s
 
 --maybeRead :: Read a => String -> Maybe a
@@ -45,8 +45,8 @@ data Global = Global {
     ,zrc :: Int
     ,zbuf :: String
     ,zbufl :: Int
-    ,zlist :: S.Seq U.ByteString
-    ,zkplist :: S.Seq U.ByteString
+    ,zlist :: S.Seq T.Text
+    ,zkplist :: S.Seq T.Text
     ,zcur :: Int
     ,zupd :: Int
     ,zupd2 :: Int
@@ -112,26 +112,26 @@ initGlobal = Global {
 }
 
 getrows :: Int -> Int -> Global -> [String]
-getrows  y l g = map U.toString (toList $ S.take l $ S.drop (y) (zlist g))
+getrows  y l g = map T.unpack (toList $ S.take l $ S.drop (y) (zlist g))
 
-getByteRows :: Int -> Int -> Global -> S.Seq U.ByteString
+getByteRows :: Int -> Int -> Global -> S.Seq T.Text
 getByteRows  y l g = S.take l $ S.drop (y) (zlist g)
 
 getrow :: Int -> Global -> String
-getrow  y g = U.toString $ S.index (zlist g) y
+getrow  y g = T.unpack $ S.index (zlist g) y
 
 updrow :: Int -> String -> Global -> Global
-updrow y s g = g{zlist= S.update y (U.fromString s) (zlist g) }
+updrow y s g = g{zlist= S.update y (T.pack s) (zlist g) }
 
 insrow :: Int -> String -> Global -> Global
 insrow y s g = insrows y 1 [s] g
 
 insrows :: Int -> Int -> [String] -> Global -> Global
 insrows y cnt ks g = g{zlist=(S.take (y) (zlist g))
-			 S.>< S.fromList (map U.fromString ks)
+			 S.>< S.fromList (map T.pack ks)
 			 S.>< (S.drop y (zlist g))  ,zlines=zlines g + cnt}
 
-insByteRows :: Int -> Int -> S.Seq U.ByteString -> Global -> Global
+insByteRows :: Int -> Int -> S.Seq T.Text -> Global -> Global
 insByteRows y cnt ks g = g{zlist=(S.take (y) (zlist g)) S.>< ks
 			   S.>< (S.drop y (zlist g)), zlines=zlines g + cnt}
 
