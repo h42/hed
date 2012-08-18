@@ -88,7 +88,8 @@ mainloop' kc g = do
 
 	KeyAlt 'f'  ->  loadf g >>= mainloop
 	KeyAlt 'm'  ->  savef g{zpager=True} >>= make >>= mainloop
-	KeyAlt 'n'  ->  checkupd g >>= newf >>= disppage >>= mainloop
+	KeyAlt 'n'  ->  checkupd g >>= newf >>= addHistory
+				   >>= disppage >>= mainloop
 	KeyAlt 'q'  -> cleanup g
 	KeyAlt 'r'  -> getHistory g >>=  mainloop
 	KeyAlt 's'  -> savef g >>= mainloop
