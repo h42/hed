@@ -32,6 +32,7 @@ module Func1 (
 
 import Data.List
 import Data.Char
+import Data.Maybe
 import Global
 import Func0
 import Func2
@@ -53,8 +54,8 @@ firstnb_r (-1) g = 0
 firstnb_r y g = x where
     buf = if y == zcur g then zbuf g else  gline2 y g
     x = case (findIndex (/=' ') buf) of
-	    Just x' -> x'
-	    Nothing -> firstnb_r (y-1) g
+	Just x' -> x'
+	Nothing -> firstnb_r (y-1) g
 
 firstnb y g = x where
     buf = if y == zcur g then zbuf g else  gline2 y g
@@ -70,8 +71,21 @@ ender g = upoff g{zx=zbufl g}
 -- ENTER
 enter g
     | zins g == False  = homer g >>= down
-    | zx g >= zbufl g = ins_line g
+    | zx g >= zbufl g = closeBrace g >>= ins_line
     | otherwise = split_line g
+
+closeBrace g
+    | head (filter (/=' ') (zbuf g)) /= '}' = return g
+    | otherwise = return g{zbuf=buf, zbufl=zbufl g -x, zx=zx g -x}
+  where buf = replicate x ' ' ++ drop x2 (zbuf g)
+	x = openBrace (zy g -1) g
+	x2 = fromJust $ findIndex (=='}') (zbuf g)
+
+openBrace (-1) g = 0
+openBrace y g = x where
+    buf = gline2 y g
+    x = if last buf == '{' then fromJust (findIndex (/=' ') buf)
+	else openBrace (y-1) g
 
 split_line g = do
     let s = take (zx g) (zbuf g)
@@ -173,7 +187,8 @@ del_line' g
 ins_line g = pline g >>= k_ins_line (zy g + 1) >>= ins_line2
 ins_line2 g = do
     let g' = insrow (zy g+1 ) "" g
-	x = if (zindentnl g)  then firstnb (zy g) g  else 0
+	x = if (zindentnl g)  then firstnb (zy g) g + brace else 0
+	brace = if last (zbuf g) =='{' then 4 else 0
     vupd g'{zy=zy g + 1,zx=x,zoff=0,zpager=True}  >>= glineup
 
 -- TAB_CHAR
