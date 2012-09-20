@@ -75,16 +75,17 @@ enter g
     | otherwise = split_line g
 
 closeBrace g
-    | head (filter (/=' ') (zbuf g)) /= '}' = return g
+    | null fbuf || head fbuf /= '}' = return g
     | otherwise = return g{zbuf=buf, zbufl=zbufl g -x, zx=zx g -x}
   where buf = replicate x ' ' ++ drop x2 (zbuf g)
 	x = openBrace (zy g -1) g
 	x2 = fromJust $ findIndex (=='}') (zbuf g)
+	fbuf = filter (/=' ') (zbuf g)
 
 openBrace (-1) g = 0
 openBrace y g = x where
     buf = gline2 y g
-    x = if last buf == '{' then fromJust (findIndex (/=' ') buf)
+    x = if (not.null) buf &&  last buf == '{' then fromJust (findIndex (/=' ') buf)
 	else openBrace (y-1) g
 
 split_line g = do
@@ -188,7 +189,7 @@ ins_line g = pline g >>= k_ins_line (zy g + 1) >>= ins_line2
 ins_line2 g = do
     let g' = insrow (zy g+1 ) "" g
 	x = if (zindentnl g)  then firstnb (zy g) g + brace else 0
-	brace = if last (zbuf g) =='{' then 4 else 0
+	brace = if zbufl g>0 && last (zbuf g) =='{' then 4 else 0
     vupd g'{zy=zy g + 1,zx=x,zoff=0,zpager=True}  >>= glineup
 
 -- TAB_CHAR
@@ -321,7 +322,7 @@ initChange g = do
 	    putGlob gl
 	    cs <- hed_request "Enter replace string: " g
 	    if cs == "" then return g{zmsg="Change cancelled"}
-            else return g{zfind=s,zchange=cs}
+	    else return g{zfind=s,zchange=cs}
 
 hedChange g'
     | zfind g' == "" || zchange g' == ""  =  return g'{zmsg="Change not primed"}
