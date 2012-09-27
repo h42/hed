@@ -31,8 +31,15 @@ import Ffi
 import System.Environment
 import System.Cmd
 import Control.Monad
+-- <<<<<<< HEAD
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import qualified Control.Exception as E
+-- =======
+-- import qualified Data.ByteString as B
+-- import qualified Data.ByteString.Char8 as C
+-- import qualified Data.ByteString.UTF8 as U
+-- >>>>>>> test
 
 ---------------------------------------------------------
 -- New - not really a file but no better place for it
@@ -154,17 +161,29 @@ saveorig g
 
 savef' g = do
     g' <- pline g
+-- <<<<<<< HEAD
     T.writeFile (zfn g') (T.unlines $ fromZlist (zlist g'))
     if (zstmode g') /= 0
 	then Ffi.setFileMode (zfn g') (zstmode g') 
+-- =======
+--     E.try (B.writeFile (zfn g') (C.unlines $ fromZlist (zlist g')))
+--         >>= (savef2 g)
+
+-- savef2 :: Global -> Either E.IOException () -> IO Global
+-- savef2 g (Left e) = return g{zmsg=show e}
+-- savef2 g _ = do
+--     if (zstmode g) /= 0
+--         then Ffi.setFileMode (zfn g) (zstmode g)
+-- >>>>>>> test
 	else return 0
-    return g'{zmsg="file saved",zupd2=0}
+    return g{zmsg="file saved",zupd2=0}
 
 -------------------------------------
 -- HOMEFILE
 -------------------------------------
 homeFile fn = do
-    home <- catch (getEnv "HOME") (\e -> return "")
+    home <- E.catch (getEnv "HOME")
+		    ((\e -> return "") :: E.IOException -> IO String)
     case home of
 	"" -> return ""
 	_  -> do
@@ -213,7 +232,7 @@ fnsHistory g = map (\h -> hfn h) (zhistory g)
 -- Input / Output History
 --
 readHistory :: Global -> IO Global
-readHistory g = catch
+readHistory g = E.catch
     (do
 	fn <- getHistoryFn
 	h <- openFile fn  ReadMode
@@ -225,14 +244,14 @@ readHistory g = catch
 		    Nothing  -> []
 	return g{zhistory=hs}
     )
-    (\e -> return g{zhistory=[]})
+    ((\e -> return g{zhistory=[]}) :: E.IOException -> IO Global)
 
 writeHistory :: Global -> IO Global
 writeHistory g = do
     fn <- getHistoryFn
-    catch 
+    E.catch
 	(writeFile fn (show (zhistory g)) >> return g)
-	(\e -> return g)
+	((\e -> return g) :: E.IOException -> IO Global)
 
 --
 -- GETHISTORY - Alt R Command
