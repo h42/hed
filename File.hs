@@ -31,6 +31,7 @@ import Ffi
 import System.Environment
 import System.Cmd
 import Control.Monad
+import qualified Control.Exception as E
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.UTF8 as U
@@ -165,7 +166,8 @@ savef' g = do
 -- HOMEFILE
 -------------------------------------
 homeFile fn = do
-    home <- catch (getEnv "HOME") (\e -> return "")
+    home <- E.catch (getEnv "HOME")
+		    ((\e -> return "") :: E.IOException -> IO String)
     case home of
 	"" -> return ""
 	_  -> do
@@ -214,7 +216,7 @@ fnsHistory g = map (\h -> hfn h) (zhistory g)
 -- Input / Output History
 --
 readHistory :: Global -> IO Global
-readHistory g = catch
+readHistory g = E.catch
     (do
 	fn <- getHistoryFn
 	h <- openFile fn  ReadMode
@@ -226,14 +228,14 @@ readHistory g = catch
 		    Nothing  -> []
 	return g{zhistory=hs}
     )
-    (\e -> return g{zhistory=[]})
+    ((\e -> return g{zhistory=[]}) :: E.IOException -> IO Global)
 
 writeHistory :: Global -> IO Global
 writeHistory g = do
     fn <- getHistoryFn
-    catch 
+    E.catch
 	(writeFile fn (show (zhistory g)) >> return g)
-	(\e -> return g)
+	((\e -> return g) :: E.IOException -> IO Global)
 
 --
 -- GETHISTORY - Alt R Command
