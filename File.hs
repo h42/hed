@@ -156,11 +156,16 @@ saveorig g
 
 savef' g = do
     g' <- pline g
-    B.writeFile (zfn g') (C.unlines $ fromZlist (zlist g'))
-    if (zstmode g') /= 0
-	then Ffi.setFileMode (zfn g') (zstmode g') 
+    E.try (B.writeFile (zfn g') (C.unlines $ fromZlist (zlist g')))
+	>>= (savef2 g)
+
+savef2 :: Global -> Either E.IOException () -> IO Global
+savef2 g (Left e) = return g{zmsg=show e}
+savef2 g _ = do
+    if (zstmode g) /= 0
+	then Ffi.setFileMode (zfn g) (zstmode g)
 	else return 0
-    return g'{zmsg="file saved",zupd2=0}
+    return g{zmsg="file saved",zupd2=0}
 
 -------------------------------------
 -- HOMEFILE
