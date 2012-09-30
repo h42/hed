@@ -31,15 +31,10 @@ import Ffi
 import System.Environment
 import System.Cmd
 import Control.Monad
--- <<<<<<< HEAD
+
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Control.Exception as E
--- =======
--- import qualified Data.ByteString as B
--- import qualified Data.ByteString.Char8 as C
--- import qualified Data.ByteString.UTF8 as U
--- >>>>>>> test
 
 ---------------------------------------------------------
 -- New - not really a file but no better place for it
@@ -161,20 +156,9 @@ saveorig g
 
 savef' g = do
     g' <- pline g
--- <<<<<<< HEAD
     T.writeFile (zfn g') (T.unlines $ fromZlist (zlist g'))
     if (zstmode g') /= 0
 	then Ffi.setFileMode (zfn g') (zstmode g') 
--- =======
---     E.try (B.writeFile (zfn g') (C.unlines $ fromZlist (zlist g')))
---         >>= (savef2 g)
-
--- savef2 :: Global -> Either E.IOException () -> IO Global
--- savef2 g (Left e) = return g{zmsg=show e}
--- savef2 g _ = do
---     if (zstmode g) /= 0
---         then Ffi.setFileMode (zfn g) (zstmode g)
--- >>>>>>> test
 	else return 0
     return g{zmsg="file saved",zupd2=0}
 
@@ -279,4 +263,3 @@ geth2 (KeyChar k) g = if k>='0' && k<='9'
 	else return g{zmsg="got char",zpager=True}
 geth2 _ g = return g{zpager=True}
 
-----------------------------
