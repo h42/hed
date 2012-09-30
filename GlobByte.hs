@@ -14,7 +14,7 @@ module Glob (
 
 import Data.Char
 import Data.List
-import Foreign
+import System.IO.Unsafe
 import Data.IORef
 import System.Directory (doesDirectoryExist, doesFileExist,
 			 getCurrentDirectory, getDirectoryContents)

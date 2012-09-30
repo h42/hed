@@ -7,10 +7,10 @@ module GetKB (
 
 import Data.Char
 import System.IO
+import System.IO.Unsafe
 import System.Posix.IO
 import System.Posix.Terminal
 import Data.IORef
-import Foreign
 
 data KeyCode = KeyChar Char | KeyFunc Int | KeyIns | KeyDel | KeyHome | KeyEnd
 	      | KeyPgup | KeyPgdown | KeyBtab | KeyUp | KeyDown
