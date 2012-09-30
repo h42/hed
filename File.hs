@@ -140,7 +140,9 @@ savef g
 	s <- hed_request "Enter file name to save: " g
 	if s=="" then  return g{zmsg="File not saved"}
 		 else savef' g{zfn=s}
-    | otherwise = saveorig g >>= savef'
+    | otherwise = E.handle
+	(\e->return g{zmsg=show (e::E.IOException)})
+	(saveorig g >>= savef')
 
 
 saveorig g
