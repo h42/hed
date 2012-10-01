@@ -25,6 +25,7 @@ import Display
 import Getfn
 import System.Posix.Files
 import System.IO
+import System.IO.Error
 import System.Directory (doesDirectoryExist, doesFileExist,
 			 getCurrentDirectory, getDirectoryContents)
 import Ffi
@@ -34,7 +35,7 @@ import Control.Monad
 
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import qualified Control.Exception as E
+--import qualified Control.Exception as E
 
 ---------------------------------------------------------
 -- New - not really a file but no better place for it
@@ -140,9 +141,9 @@ savef g
 	s <- hed_request "Enter file name to save: " g
 	if s=="" then  return g{zmsg="File not saved"}
 		 else savef' g{zfn=s}
-    | otherwise = E.handle
-	(\e->return g{zmsg=show (e::E.IOException)})
+    | otherwise = catchIOError
 	(saveorig g >>= savef')
+	(\e->return g{zmsg=show e}) -- (e::E.IOException)})
 
 
 saveorig g
@@ -168,8 +169,8 @@ savef' g = do
 -- HOMEFILE
 -------------------------------------
 homeFile fn = do
-    home <- E.catch (getEnv "HOME")
-		    ((\e -> return "") :: E.IOException -> IO String)
+    home <- catchIOError (getEnv "HOME")
+			 (\e -> return "")
     case home of
 	"" -> return ""
 	_  -> do
@@ -218,7 +219,7 @@ fnsHistory g = map (\h -> hfn h) (zhistory g)
 -- Input / Output History
 --
 readHistory :: Global -> IO Global
-readHistory g = E.catch
+readHistory g = catchIOError
     (do
 	fn <- getHistoryFn
 	h <- openFile fn  ReadMode
@@ -230,14 +231,14 @@ readHistory g = E.catch
 		    Nothing  -> []
 	return g{zhistory=hs}
     )
-    ((\e -> return g{zhistory=[]}) :: E.IOException -> IO Global)
+    (\e -> return g{zhistory=[]})
 
 writeHistory :: Global -> IO Global
 writeHistory g = do
     fn <- getHistoryFn
-    E.catch
+    catchIOError
 	(writeFile fn (show (zhistory g)) >> return g)
-	((\e -> return g) :: E.IOException -> IO Global)
+	(\e -> return g)
 
 --
 -- GETHISTORY - Alt R Command
