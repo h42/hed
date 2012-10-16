@@ -70,10 +70,9 @@ firstnb y g = x where
     buf = if y == zcur g then zbuf g else  gline2 y g
     x = case (findIndex (/=' ') buf) of  Nothing -> 0 ; Just x' -> x'
 
-
 indent :: Global -> IO Global
 indent g = gline g >>= \g' -> return g'{zx=x} where
-    x = if (zy g - 1)==0 then 0 else firstnb_r (zy g) g
+    x = firstnb_r (zy g) g
 
 -- ENDER
 ender g = upoff g{zx=zbufl g}
@@ -128,7 +127,7 @@ ins_char' c g
 	let buf = zbuf g ++ replicate (zx g - zbufl g) ' '
 	ins_char c g{zbuf=buf,zbufl=zx g}
     | otherwise = do
-	let xd = if c=='}' && all (==' ') (zbuf g)
+	let xd = if c=='}' && (null (zbuf g) || all (==' ') (zbuf g))
 		then (find_open (zy g - 1) 0 g)
 		else -1
 	let x = if xd<0 then (zx g)   else xd
@@ -140,9 +139,9 @@ ins_char' c g
 	upoff g{zbuf = buf',zx=x+1,zbufl=l+1}
 
 find_open y st g
-    | y <= 0 = 0
-    | st < 0    = fnb
-    | otherwise = find_open (y-1) (trace "hey" st2) g
+    | y < 0 = 0
+    | st2 < 0    = fnb
+    | otherwise = find_open (y-1) st2 g
   where buf = gline2 y g
 	(f,l,fnb) = get_fl (' ',' ', -1) buf
 	l2 = if l=='{' then 1 else 0
