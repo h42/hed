@@ -40,6 +40,7 @@ import Hterm
 import GetKB
 import Display
 import Glob
+import Debug.Trace
 
 -- UPOFFX
 upoff :: Global -> IO Global
@@ -48,6 +49,14 @@ upoff g
     | x >= zoff g + zmaxx g = return g{zoff=(x - zmaxx g + 5),zpager=True}
     | otherwise = return g
   where x = zx g
+
+-- ADJ_BUF
+adj_buf :: Global -> Global
+adj_buf g = g{zbufl=l, zbuf=take l buf} where
+    f i a [] = a
+    f i a (x:xs) = f (i+1) (if x/=' ' then i else a) xs
+    buf = take (zbufl g) (zbuf g)
+    l = f 0 (-1) buf + 1
 
 -- INDENT
 firstnb_r (-1) g = 0
@@ -61,6 +70,7 @@ firstnb y g = x where
     buf = if y == zcur g then zbuf g else  gline2 y g
     x = case (findIndex (/=' ') buf) of  Nothing -> 0 ; Just x' -> x'
 
+
 indent :: Global -> IO Global
 indent g = gline g >>= \g' -> return g'{zx=x} where
     x = if (zy g - 1)==0 then 0 else firstnb_r (zy g) g
@@ -69,24 +79,11 @@ indent g = gline g >>= \g' -> return g'{zx=x} where
 ender g = upoff g{zx=zbufl g}
 
 -- ENTER
-enter g
+enter g'
     | zins g == False  = homer g >>= down
-    | zx g >= zbufl g = closeBrace g >>= ins_line
+    | zx g >= zbufl g = ins_line g
     | otherwise = split_line g
-
-closeBrace g
-    | null fbuf || head fbuf /= '}' = return g
-    | otherwise = return g{zbuf=buf, zbufl=zbufl g -x, zx=zx g -x}
-  where buf = replicate x ' ' ++ drop x2 (zbuf g)
-	x = openBrace (zy g -1) g
-	x2 = fromJust $ findIndex (=='}') (zbuf g)
-	fbuf = filter (/=' ') (zbuf g)
-
-openBrace (-1) g = 0
-openBrace y g = x where
-    buf = gline2 y g
-    x = if (not.null) buf &&  last buf == '{' then fromJust (findIndex (/=' ') buf)
-	else openBrace (y-1) g
+  where g = adj_buf g'
 
 split_line g = do
     let s = take (zx g) (zbuf g)
@@ -131,13 +128,34 @@ ins_char' c g
 	let buf = zbuf g ++ replicate (zx g - zbufl g) ' '
 	ins_char c g{zbuf=buf,zbufl=zx g}
     | otherwise = do
-	let x = zx g
+	let xd = if c=='}' && all (==' ') (zbuf g)
+		then (find_open (zy g - 1) 0 g)
+		else -1
+	let x = if xd<0 then (zx g)   else xd
 	    l = zbufl g
 	    buf = zbuf g
 	    xbuf = c : (drop x buf)
 	    buf' = take x buf ++ xbuf
-	displine xbuf (zy g) (zx g) g
+	displine xbuf (zy g) (x) g
 	upoff g{zbuf = buf',zx=x+1,zbufl=l+1}
+
+find_open y st g
+    | y <= 0 = 0
+    | st < 0    = fnb
+    | otherwise = find_open (y-1) (trace "hey" st2) g
+  where buf = gline2 y g
+	(f,l,fnb) = get_fl (' ',' ', -1) buf
+	l2 = if l=='{' then 1 else 0
+	f2 = if f=='}' then 1 else 0
+	st2 = st - l2 + f2
+
+get_fl (f,l,pos) [] = (f,l,pos)
+get_fl (f,l,pos) (x:xs) = get_fl (f',l',pos') xs where
+    (f',pos')
+	| f==' ' && x/=' '  = (x,pos+1)
+	| f==' ' && x==' '  = (' ',pos+1)
+	| otherwise =  (f,pos)
+    l' = if x/=' ' then x else l
 
 -- BS_CHAR
 bs_char :: Global -> IO Global
