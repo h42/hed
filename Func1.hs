@@ -127,7 +127,7 @@ ins_char' c g
 	let buf = zbuf g ++ replicate (zx g - zbufl g) ' '
 	ins_char c g{zbuf=buf,zbufl=zx g}
     | otherwise = do
-	let xd = if c=='}' && (null (zbuf g) || all (==' ') (zbuf g))
+	let xd = if c=='}' && all (==' ') (zbuf g) -- all sets empty list true
 		then (find_open (zy g - 1) 0 g)
 		else -1
 	let x = if xd<0 then (zx g)   else xd
