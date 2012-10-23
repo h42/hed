@@ -7,7 +7,6 @@ module GetKB (
 
 import Data.Char
 import System.IO
-import System.IO.Unsafe
 import System.Posix.IO
 import System.Posix.Terminal
 import Data.IORef
@@ -49,11 +48,6 @@ fkey = [
     ,("\x1bOF",KeyEnd)       -- end2
  ]
 
---keybuf where we store chars from unresolved function eval
-keybuf :: IORef String
-keybuf = unsafePerformIO $ newIORef ""
-
-
 -- we should not need "check2 [] _" as xs grows from [x] in call from checkFkey
 check2 [] [] = 1
 check2 _ [] = 0
@@ -73,24 +67,9 @@ getkb2 fs sx = do
     let sx' = sx++[c]
     let (fs',match) = checkFkey fs sx' []
     case (fs',match) of
-	([],_)      -> do
-	    if length sx' == 2
-		then do
-		    return $ KeyAlt c
-		else do
-		    writeIORef keybuf (tail sx')
-		    return (KeyChar (head sx'))
+	([],_)      -> return KeyNone
 	(_,KeyNone) -> getkb2 fs' (sx++[c])
 	_ -> return match
-
-chkbuf = do
-    s <- readIORef keybuf
-    --putStrLn $ "chkbuf = " ++ "'" ++ s ++ "'"
-    case s of
-	[] -> return (-1,'\0')
-	(x:xs) -> do
-	    writeIORef keybuf xs
-	    return (0,x)
 
 mkchar c
     | oc == 127 = KeyBs
@@ -100,14 +79,10 @@ mkchar c
 	c' = if oc>=1 && oc<=26 then chr (oc + ord 'a' -1) else ' '
 
 getkb = do
-    (rc,c') <- chkbuf
-    case (rc,c') of
-	(0,_) -> return $ mkchar c'
-	_ -> do
-	    c <- getChar
-	    case c of
-		'\x1B' -> getkb2 fkey "\x1b"
-		_    -> return $ mkchar c
+    c <- getChar
+    case c of
+	'\x1B' -> getkb2 fkey "\x1b"
+	_    -> return $ mkchar c
 
 openkb = do
     hSetBuffering stdin NoBuffering
