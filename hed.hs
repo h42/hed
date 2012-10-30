@@ -68,6 +68,7 @@ mainloop' kc g = do
 	KeyCntl 'f' -> scroll (1) g >>= mainloop
 	KeyCntl 'r' -> scroll (-1) g >>= mainloop
 	KeyCntl 'g' -> go g >>= mainloop
+	KeyCntl 'h' -> bs_char g >>= mainloop
 	KeyCntl 'i' -> tab_char g >>= mainloop
 	KeyCntl 'j' -> enter g >>= mainloop
 	KeyCntl 'k' -> cntl_k g >>= mainloop

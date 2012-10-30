@@ -75,10 +75,9 @@ getkb2 fs sx = do
     case (fs',match) of
 	([],_)      -> do
 	    if length sx' == 2
-		then do
-		    return $ KeyAlt c
+		then return $ KeyAlt c
 		else do
-		    writeIORef keybuf (tail sx')
+		    --writeIORef keybuf (tail sx')
 		    return (KeyChar (head sx'))
 	(_,KeyNone) -> getkb2 fs' (sx++[c])
 	_ -> return match
