@@ -111,7 +111,7 @@ getreq s x y z flag = do
 	    putChar c 
 	    if flag==1 then return [c] else getreq (s++[c]) (x+1) y z flag
 	KeyCntl 'j' -> return s
-	KeyBs ->
+	KeyCntl 'h' ->
 	    if not $ null s
 		then putStr "\x08 \x08" >> getreq (init s) (max (x-1) 0) y z flag
 		else getreq s x y z flag
