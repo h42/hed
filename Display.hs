@@ -103,28 +103,35 @@ status g = do
 	putStr s
      else return ()
 
+----------------------------------------------
+-- REQUEST
+----------------------------------------------
+hed_request s g = hed_requestx s 0 g
+
+hed_requestx s flag g = do
+    tgoto (zmaxy g -1) 0
+    putStr (s)
+    tclreol
+    getreq [] 0 (zmaxy g -1) (length s + 1) flag
+
 getreq s x y z flag = do
+    tgoto y z
+    putStr s
+    tclreol
+    tgoto y (z+x)
     hFlush stdout
     kc <- getkb
     case kc of
 	KeyChar c -> do
-	    putChar c 
-	    if flag==1 then return [c] else getreq (s++[c]) (x+1) y z flag
+	    if flag==1 then return [c]
+	    else getreq (take x s ++ [c] ++ drop x s) (x+1) y z flag
 	KeyCntl 'j' -> return s
 	KeyCntl 'h' ->
-	    if not $ null s
-		then putStr "\x08 \x08" >> getreq (init s) (max (x-1) 0) y z flag
-		else getreq s x y z flag
+	    if x>0 then getreq (take (x-1) s ++ drop x s) (x-1) y z flag
+	    else getreq s x y z flag
+	KeyLeft -> getreq s (if x>0 then x-1 else x) y z flag
+	KeyRight -> getreq s (if x<length s then x+1 else x) y z flag
+	KeyHome -> getreq s 0 y z flag
+	KeyEnd -> getreq s (length s) y z flag
 	_ -> getreq s x y z flag
 
-hed_request s g = hed_requestx s 0 g
-
-hed_requestx s flag g = do
-	tgoto (zmaxy g -1) 0
-	putStr (s)
-	tclreol
-	getreq [] 0 (zmaxy g -1) (length s) flag
-
-{-test_request g = do
-    s <- hed_request "Test" g
-    return g{zmsg=s} -}
