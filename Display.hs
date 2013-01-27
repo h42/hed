@@ -122,16 +122,18 @@ getreq s x y z flag = do
     hFlush stdout
     kc <- getkb
     case kc of
+	KeyBs -> backspace
 	KeyChar c -> do
 	    if flag==1 then return [c]
 	    else getreq (take x s ++ [c] ++ drop x s) (x+1) y z flag
 	KeyCntl 'j' -> return s
-	KeyCntl 'h' ->
-	    if x>0 then getreq (take (x-1) s ++ drop x s) (x-1) y z flag
-	    else getreq s x y z flag
+	KeyCntl 'h' -> backspace
 	KeyLeft -> getreq s (if x>0 then x-1 else x) y z flag
 	KeyRight -> getreq s (if x<length s then x+1 else x) y z flag
 	KeyHome -> getreq s 0 y z flag
 	KeyEnd -> getreq s (length s) y z flag
 	_ -> getreq s x y z flag
+  where backspace =
+	    if x>0 then getreq (take (x-1) s ++ drop x s) (x-1) y z flag
+	    else getreq s x y z flag
 
