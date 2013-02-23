@@ -32,6 +32,7 @@ import Ffi
 import System.Environment
 import System.Cmd
 import Control.Monad
+import qualified Control.Exception as E
 
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -85,8 +86,11 @@ loadf g = do
 	else loadfn fn g
 
 loadfn fn g = do
-    (rc,fn') <- h_readlink fn -- rc>0 for symlink ; we do nothing with this info
-    loadfn2 fn' g
+    (rc2,fn') <- h_readlink fn -- rc>0 for symlink ; we do nothing with this info
+    rc <- E.try (loadfn2 fn' g) :: IO (Either E.SomeException Global)
+    case rc of
+	Left e -> return g{zmsg=show e}
+	Right g' -> return g'
 
 loadfn2 fn g = do
     g1 <- (addHistory g >>= checkupd  >>= access fn)
@@ -100,13 +104,9 @@ loadfn2 fn g = do
 
 -- readFile function holds open lock on fn preventing updates even
 -- when done reading so I use hGetContents. -  Learn how to close???
-load2 fn g = do
-    h <- openFile fn ReadMode
+load2 fn g = E.bracket (openFile fn ReadMode) hClose $ \h -> do
     let msg = if zaccess g == 1 then fn ++ " READ ONLY" else fn
-    -- Use strict ByteString to avoid short lazy read
-    recs <- fmap (T.lines) $ T.hGetContents h
-    hClose h
-
+    recs <- (fmap (T.lines) $ T.hGetContents h)
     p <- getFileMode fn
     chk_winsize initGlobal{zfn=fn,zmsg=msg,zlist=toZlist recs,
 		zlines=length recs,
