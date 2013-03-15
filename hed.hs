@@ -32,11 +32,11 @@ mainloop g = do
     status g
     goto g
     hFlush stdout
-    mkb <- timeout (10^6) getkb
+    mkb <- timeout (2*10^6) getkb
     case mkb of
 	Just kc ->
 	    mainloop' kc g{zmsg="",zglobals=take 15 (g:zglobals g),zpager=False}
-	Nothing -> idle_func g
+	Nothing -> idle_func g{zpager=False}
 
 idle_func g = chk_winsize g >>= mainloop
 

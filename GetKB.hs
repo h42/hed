@@ -11,6 +11,9 @@ import System.IO.Unsafe
 import System.Posix.IO
 import System.Posix.Terminal
 import Data.IORef
+import Foreign.C.Types
+
+foreign import ccall "getchar"  getchar :: IO CInt
 
 data KeyCode = KeyChar Char | KeyFunc Int | KeyIns | KeyDel | KeyHome | KeyEnd
 	      | KeyPgup | KeyPgdown | KeyBtab | KeyUp | KeyDown
@@ -69,18 +72,22 @@ checkFkey (k:ks) xs newdict = case rc of
 
 getkb2 fs sx = do
     --print $ length fs
-    c <- getChar
-    let sx' = sx++[c]
-    let (fs',match) = checkFkey fs sx' []
-    case (fs',match) of
-	([],_)      -> do
-	    if length sx' == 2
-		then return $ KeyAlt c
-		else do
-		    --writeIORef keybuf (tail sx')
-		    return (KeyChar (head sx'))
-	(_,KeyNone) -> getkb2 fs' (sx++[c])
-	_ -> return match
+    --c <- getChar
+    ci <-fmap fromIntegral getchar
+    if ci >= 128 then getkb2 fs sx -- ignore alt chars here - should not happen
+    else do
+	let c = chr ci
+	let sx' = sx++[c]
+	let (fs',match) = checkFkey fs sx' []
+	case (fs',match) of
+	    ([],_)      -> do
+		if length sx' == 2
+		    then return $ KeyAlt c
+		    else do
+			--writeIORef keybuf (tail sx')
+			return (KeyChar (head sx'))
+	    (_,KeyNone) -> getkb2 fs' (sx++[c])
+	    _ -> return match
 
 chkbuf = do
     s <- readIORef keybuf
@@ -103,10 +110,15 @@ getkb = do
     case (rc,c') of
 	(0,_) -> return $ mkchar c'
 	_ -> do
-	    c <- getChar
-	    case c of
-		'\x1B' -> getkb2 fkey "\x1b"
-		_    -> return $ mkchar c
+	    -- use ffi to prevent exception for alt chars (>=128) on
+	    -- archlinux xterm
+	    ci<-fmap fromIntegral getchar
+	    if ci > 127 then return $ KeyAlt $ chr (ci - 128 )
+	    else do
+		let c = chr ci
+		case c of
+		    '\x1B' -> getkb2 fkey "\x1b"
+		    _    -> return $ mkchar c
 
 openkb = do
     hSetBuffering stdin NoBuffering
