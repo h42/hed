@@ -107,7 +107,7 @@ mkchar c
 
 getkb = do
     (rc,c') <- chkbuf
-    case (rc,c') of
+    case (1,c') of
 	(0,_) -> return $ mkchar c'
 	_ -> do
 	    -- use ffi to prevent exception for alt chars (>=128) on

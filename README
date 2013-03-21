@@ -4,4 +4,3 @@ version knowing little about monads outside of the IO monad.
 The first version will work with xterms. The second version will hopefully
 work with gtk.
 
-I will look into acid-state and mysql-simple
