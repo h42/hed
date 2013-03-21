@@ -10,7 +10,6 @@ import System.IO
 import System.IO.Unsafe
 import System.Posix.IO
 import System.Posix.Terminal
-import Data.IORef
 import Foreign.C.Types
 
 foreign import ccall "getchar"  getchar :: IO CInt
@@ -52,10 +51,6 @@ fkey = [
     ,("\x1bOF",KeyEnd)       -- end2
  ]
 
---keybuf where we store chars from unresolved function eval
-keybuf :: IORef String
-keybuf = unsafePerformIO $ newIORef ""
-
 
 -- we should not need "check2 [] _" as xs grows from [x] in call from checkFkey
 check2 [] [] = 1
@@ -71,9 +66,7 @@ checkFkey (k:ks) xs newdict = case rc of
     where rc = check2 (fst k) xs
 
 getkb2 fs sx = do
-    --print $ length fs
-    --c <- getChar
-    ci <-fmap fromIntegral getchar
+    ci <-fmap fromIntegral getchar  -- c getchar
     if ci >= 128 then getkb2 fs sx -- ignore alt chars here - should not happen
     else do
 	let c = chr ci
@@ -83,20 +76,9 @@ getkb2 fs sx = do
 	    ([],_)      -> do
 		if length sx' == 2
 		    then return $ KeyAlt c
-		    else do
-			--writeIORef keybuf (tail sx')
-			return (KeyChar (head sx'))
-	    (_,KeyNone) -> getkb2 fs' (sx++[c])
+		    else return KeyNone
+	    (_,KeyNone) -> getkb2 fs' (sx')
 	    _ -> return match
-
-chkbuf = do
-    s <- readIORef keybuf
-    --putStrLn $ "chkbuf = " ++ "'" ++ s ++ "'"
-    case s of
-	[] -> return (-1,'\0')
-	(x:xs) -> do
-	    writeIORef keybuf xs
-	    return (0,x)
 
 mkchar c
     | oc == 127 = KeyBs
@@ -106,19 +88,15 @@ mkchar c
 	c' = if oc>=1 && oc<=26 then chr (oc + ord 'a' -1) else ' '
 
 getkb = do
-    (rc,c') <- chkbuf
-    case (1,c') of
-	(0,_) -> return $ mkchar c'
-	_ -> do
-	    -- use ffi to prevent exception for alt chars (>=128) on
-	    -- archlinux xterm
-	    ci<-fmap fromIntegral getchar
-	    if ci > 127 then return $ KeyAlt $ chr (ci - 128 )
-	    else do
-		let c = chr ci
-		case c of
-		    '\x1B' -> getkb2 fkey "\x1b"
-		    _    -> return $ mkchar c
+    -- use ffi to prevent exception for alt chars (>=128) on
+    -- archlinux xterm
+    ci<-fmap fromIntegral getchar --getchar is c getchar
+    if ci > 127 then return $ KeyAlt $ chr (ci - 128 )
+    else do
+	let c = chr ci
+	case c of
+	    '\x1B' -> getkb2 fkey "\x1b"
+	    _    -> return $ mkchar c
 
 openkb = do
     hSetBuffering stdin NoBuffering
