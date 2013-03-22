@@ -10,6 +10,7 @@ import System.IO
 import System.IO.Unsafe
 import System.Posix.IO
 import System.Posix.Terminal
+import System.Timeout
 import Foreign.C.Types
 
 foreign import ccall "getchar"  getchar :: IO CInt
@@ -73,12 +74,15 @@ getkb2 fs sx = do
 	let sx' = sx++[c]
 	let (fs',match) = checkFkey fs sx' []
 	case (fs',match) of
-	    ([],_)      -> do
-		if length sx' == 2
-		    then return $ KeyAlt c
-		    else return KeyNone
-	    (_,KeyNone) -> getkb2 fs' (sx')
-	    _ -> return match
+	    ([],_)  ->  do
+		if length sx' == 2  then return $ KeyAlt c
+		else return KeyNone
+	    (_,KeyNone)  ->  getkb2 fs' (sx')
+	    _  ->  return match
+
+clearout = do
+    getchar
+    clearout
 
 mkchar c
     | oc == 127 = KeyBs
