@@ -95,7 +95,8 @@ getkb = do
     -- use ffi to prevent exception for alt chars (>=128) on
     -- archlinux xterm
     ci<-fmap fromIntegral getchar --getchar is c getchar
-    if ci > 127 then return $ KeyAlt $ chr (ci - 128 )
+    if ci == -1 then return KeyNone -- SIGWINCH could kill getchar
+    else if ci > 127 then return $ KeyAlt $ chr (ci - 128 )
     else do
 	let c = chr ci
 	case c of

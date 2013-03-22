@@ -1,9 +1,11 @@
-import Data.Char            
+import Data.Char
 import Control.Exception
 import System.IO
 import System.Environment
 import System.Cmd
 import System.Timeout
+import System.Posix.Signals
+import System.Posix.Signals.Exts
 import Debug.Trace
 
 import Global
@@ -24,6 +26,7 @@ main = do
 	     loadfn (fnHistory 0 g') g'
 	 else newf g'
     disppage g
+    installHandler sigWINCH (Catch (return ())) Nothing
     bracket openkb closekb (\_ -> mainloop g)
 
 mainloop :: Global -> IO ()
@@ -32,17 +35,10 @@ mainloop g = do
     status g
     goto g
     hFlush stdout
-    {-
-    mkb <- timeout (2*10^6) getkb
-    case mkb of
-	Just kc ->
-	    mainloop' kc g{zmsg="",zglobals=take 32 (g:zglobals g),zpager=False}
-	Nothing -> idle_func g{zpager=False}
-    -}
+
     kc <- getkb
     mainloop' kc g{zmsg="",zglobals=take 32 (g:zglobals g),zpager=False}
 
-idle_func g = chk_winsize g
 
 undo g
     | length (zglobals g) < 2 = return g
@@ -99,7 +95,9 @@ mainloop' kc g = do
 	KeyAlt 'r'  -> getHistory g >>=  mainloop
 	KeyAlt 's'  -> savef g >>= mainloop
 	--KeyAlt 't'  -> tester g >>= mainloop
-	KeyAlt 't'  -> idle_func g  >>= mainloop
+
+	KeyNone     -> chk_winsize g >>= mainloop
+
 	_           -> mainloop g
 
 cleanup :: Global -> IO ()
@@ -121,3 +119,4 @@ tester g = do
     putStrLn fn
     getkb
     return g
+
