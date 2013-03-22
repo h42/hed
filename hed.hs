@@ -32,13 +32,17 @@ mainloop g = do
     status g
     goto g
     hFlush stdout
+    {-
     mkb <- timeout (2*10^6) getkb
     case mkb of
 	Just kc ->
-	    mainloop' kc g{zmsg="",zglobals=take 15 (g:zglobals g),zpager=False}
+	    mainloop' kc g{zmsg="",zglobals=take 32 (g:zglobals g),zpager=False}
 	Nothing -> idle_func g{zpager=False}
+    -}
+    kc <- getkb
+    mainloop' kc g{zmsg="",zglobals=take 32 (g:zglobals g),zpager=False}
 
-idle_func g = chk_winsize g >>= mainloop
+idle_func g = chk_winsize g
 
 undo g
     | length (zglobals g) < 2 = return g
@@ -94,8 +98,8 @@ mainloop' kc g = do
 	KeyAlt 'q'  -> cleanup g
 	KeyAlt 'r'  -> getHistory g >>=  mainloop
 	KeyAlt 's'  -> savef g >>= mainloop
-	KeyAlt 't'  -> tester g >>= mainloop
-	--KeyAlt 't'  -> show_winsize g >>= mainloop
+	--KeyAlt 't'  -> tester g >>= mainloop
+	KeyAlt 't'  -> idle_func g  >>= mainloop
 	_           -> mainloop g
 
 cleanup :: Global -> IO ()
