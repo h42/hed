@@ -26,7 +26,11 @@ main = do
 	     loadfn (fnHistory 0 g') g'
 	 else newf g'
     disppage g
+
+    -- Catch winsize change signal which causes getchar to return -1 which
+    -- is trapped in getkb and returns KeyNone which updates screen.
     installHandler sigWINCH (Catch (return ())) Nothing
+
     bracket openkb closekb (\_ -> mainloop g)
 
 mainloop :: Global -> IO ()
