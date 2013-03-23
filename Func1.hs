@@ -277,7 +277,8 @@ pgup2 g
 pgdown :: Global -> IO Global
 pgdown g = pline g >>= pgdown2 >>= gline
 pgdown2 g
-    | ztop g >= zlines g - 1 = return g{zy=zlines g -1}
+    -- | ztop g >= zlines g - 1 = bottom g
+    | ztop g + zmaxy g >= zlines g + 1 = return g
     | otherwise = do
 	let t = min (ztop g + zmaxy g - 1) (zlines g -1)
 	    y = min (zy g + zmaxy g - 1) (zlines g -1)
