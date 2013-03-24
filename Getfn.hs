@@ -16,8 +16,7 @@ import GetKB
 
 getfn rows glob = do
     fns <- getfns glob
-    let fns' = fns
-    selectfn (rows-2) 0 fns'
+    selectfn rows 0 fns
 
 getfns glob = do
     fns <- dirList "" ""
@@ -28,8 +27,9 @@ checkfn glob fn = any (\x -> drop (length fn - length x) fn == x) glob
 
 selectfn rows y fns = do
     let l = length fns
+	rows' = rows-2
     tclrscr
-    let fl = take rows (drop y fns)
+    let fl = take rows' (drop y fns)
     let fl' = zipWith (\x f ->(show x) ++ ". " ++ f) [(y+1)..] fl
     mapM putStrLn fl'
     putStr "\n==> "
@@ -38,12 +38,12 @@ selectfn rows y fns = do
     if s == "" || (not $ all isDigit s)
 	then do
 	    case s of
-		"n" -> selectfn rows (min (y+rows) (l-1)) fns
-		"p" -> selectfn rows (max (y-rows) 0) fns
+		"n" -> selectfn rows (min (y+rows') (l-1)) fns
+		"p" -> selectfn rows (max (y-rows') 0) fns
 		"q" -> return ""
 		"" -> return ""
-		"." -> getfn rows [".c",".cc",".hs",".py",".go","makefile"]
-		"*" -> getfn rows [[]]
+		"." -> getfn (rows) [".c",".cc",".hs",".py",".go","makefile"]
+		"*" -> getfn (rows) [[]]
 		_ -> selectfn rows y fns
 	else do
 	    let n =  read s - 1 :: Int
@@ -62,6 +62,7 @@ getcmd s = do
 	KeyChar 'p' -> return ['p']
 	KeyChar '*' -> return ['*']
 	KeyChar '.' -> return ['.']
+	KeyChar ',' -> return [',']
 	KeyCntl 'j' -> return s
 	KeyChar n -> do
 	    if isDigit n  then putChar n >> hFlush stdout >> getcmd (s++[n])
