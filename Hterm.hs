@@ -10,12 +10,14 @@ module Hterm (
     tputblk,
     tputchar,
     tputs,
+    trequest,
     tsetbg,
     tscroll
 ) where
 
 import Data.Array
 import System.IO
+import GetKB
 
 data Hterm = Hterm {
     t_rows  :: Int
@@ -131,6 +133,29 @@ tscroll x = do
 ----------------------------------------
 --  GETKB
 ----------------------------------------
+trequest s x y z flag = do
+    tgoto y z
+    putStr s
+    tclreol
+    tgoto y (z+x)
+    hFlush stdout
+    kc <- getkb
+    case kc of
+	KeyBs -> backspace
+	KeyChar c -> do
+	    if flag==1 then return [c]
+	    else trequest (take x s ++ [c] ++ drop x s) (x+1) y z flag
+	KeyCntl 'j' -> return s
+	KeyCntl 'h' -> backspace
+	KeyLeft -> trequest s (if x>0 then x-1 else x) y z flag
+	KeyRight -> trequest s (if x<length s then x+1 else x) y z flag
+	KeyHome -> trequest s 0 y z flag
+	KeyEnd -> trequest s (length s) y z flag
+	_ -> trequest s x y z flag
+  where backspace =
+	    if x>0 then trequest (take (x-1) s ++ drop x s) (x-1) y z flag
+	    else trequest s x y z flag
+
 
 
 ----------------------------------------

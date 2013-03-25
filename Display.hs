@@ -112,28 +112,5 @@ hed_requestx s flag g = do
     tgoto (zmaxy g -1) 0
     putStr (s)
     tclreol
-    getreq [] 0 (zmaxy g -1) (length s + 1) flag
-
-getreq s x y z flag = do
-    tgoto y z
-    putStr s
-    tclreol
-    tgoto y (z+x)
-    hFlush stdout
-    kc <- getkb
-    case kc of
-	KeyBs -> backspace
-	KeyChar c -> do
-	    if flag==1 then return [c]
-	    else getreq (take x s ++ [c] ++ drop x s) (x+1) y z flag
-	KeyCntl 'j' -> return s
-	KeyCntl 'h' -> backspace
-	KeyLeft -> getreq s (if x>0 then x-1 else x) y z flag
-	KeyRight -> getreq s (if x<length s then x+1 else x) y z flag
-	KeyHome -> getreq s 0 y z flag
-	KeyEnd -> getreq s (length s) y z flag
-	_ -> getreq s x y z flag
-  where backspace =
-	    if x>0 then getreq (take (x-1) s ++ drop x s) (x-1) y z flag
-	    else getreq s x y z flag
+    trequest [] 0 (zmaxy g -1) (length s + 1) flag
 

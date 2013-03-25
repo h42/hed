@@ -1,5 +1,5 @@
 HSFLAGS =  -fwarn-name-shadowing -XBangPatterns -XOverloadedStrings
-CLG = $(HSFLAGS) --make # -threaded -rtsopts #-static
+CLG = $(HSFLAGS) --make  # -threaded -rtsopts #-static
 
 CFLAGS=-Wall
 
