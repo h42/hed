@@ -23,6 +23,7 @@ import Data.Maybe
 import Func0
 import Display
 import Getfn
+import Data.List
 import System.Posix.Files
 import System.IO
 import System.IO.Error
@@ -113,7 +114,12 @@ load2 fn g = E.bracket (openFile fn ReadMode) hClose $ \h -> do
 		zaccess=zaccess g,zhistory=zhistory g,zpager=True,
 		zfind=zfind g, zchange=zchange g,
 		zkplist=zkplist g,zstmode=p}
-	>>= fromHistory  >>= addHistory >>= chkBottom >>= gline
+	>>= fromHistory  >>= addHistory >>= chkBottom >>= chktype >>= gline
+
+chktype :: Global -> IO Global
+chktype g
+    | isSuffixOf ".py" (zfn g) = return g{ztabcompress=False}
+    | otherwise = return g{ztabcompress=True}
 
 chkBottom g = if zy g < zlines g then return g
 	      else bottom g

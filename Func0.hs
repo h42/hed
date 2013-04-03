@@ -36,7 +36,9 @@ trim bs = take l' bs where
 pline :: Global -> IO Global
 pline g
     | zcur g < 0 || zupd g /= 1   = return g
-    | otherwise = return $ updrow (zcur g) (tabcomp.trim $ zbuf g) g{zupd=0}
+    | otherwise = return $ updrow (zcur g) (fff $ zbuf g) g{zupd=0}
+  where fff   | ztabcompress g = tabcomp.trim
+	      | otherwise = trim
 
 pline2 :: Int -> String -> Global -> Global
 pline2 y b g = updrow y (tabcomp b) g

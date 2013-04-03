@@ -3,10 +3,10 @@ CLG = $(HSFLAGS) --make  # -threaded -rtsopts #-static
 
 CFLAGS=-Wall
 
-OBJS=Glob.o Ffi.o Global.o Func0.o Hterm.o GetKB.o  Display.o Func2.o Func1.o\
+OBJS=GetKB.o Glob.o Ffi.o Global.o Func0.o Hterm.o Display.o Func2.o Func1.o\
  Getfn.o File.o
 
-PROGS=hed kb htest #Tglob
+PROGS=hed kb htest chktabs #Tglob
 
 
 %.o : %.hs
