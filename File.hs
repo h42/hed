@@ -118,8 +118,8 @@ load2 fn g = E.bracket (openFile fn ReadMode) hClose $ \h -> do
 
 chktype :: Global -> IO Global
 chktype g
-    | isSuffixOf ".py" (zfn g) = return g{ztabcompress=False}
-    | otherwise = return g{ztabcompress=True}
+    | any ((zfn g)==) ["makefile","Makefile"] = return g{ztabcompress=True}
+    | otherwise = return g{ztabcompress=False}
 
 chkBottom g = if zy g < zlines g then return g
 	      else bottom g

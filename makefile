@@ -26,6 +26,7 @@ hed:hed.hs ffilib.o $(OBJS)
 
 install:
 	install -m755 -ojerry -gjerry hed /usr/local/bin/e
+	install -m755 -ojerry -gjerry chktabs /usr/local/bin/chktabs
 
 clean:
 	-rm *.hi *.o $(PROGS)
