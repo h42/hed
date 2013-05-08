@@ -42,7 +42,7 @@ selectfn rows y fns = do
 		"p" -> selectfn rows (max (y-rows') 0) fns
 		"q" -> return ""
 		"" -> return ""
-		"." -> getfn (rows) [".c",".cc",".hs",".py",".go","makefile"]
+                "." -> getfn (rows) [".c",".cc",".hs",".hsc",".h",".py",".go","makefile"]
 		"*" -> getfn (rows) [[]]
 		_ -> selectfn rows y fns
 	else do
