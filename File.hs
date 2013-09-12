@@ -35,16 +35,14 @@ import System.Cmd
 import Control.Monad
 import qualified Control.Exception as E
 
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
---import qualified Control.Exception as E
+import qualified Data.ByteString.Char8 as B
 
 ---------------------------------------------------------
 -- New - not really a file but no better place for it
 ---------------------------------------------------------
 newf :: Global -> IO Global
 newf g = chk_winsize initGlobal
-    {zmsg="",zlist=emptyZlist,zlines=1,zhistory=zhistory g,zkplist=zkplist g}
+    {zmsg="",zlist=[B.empty],zlines=1,zhistory=zhistory g,zkplist=zkplist g}
 
 ---------------------------------------------------------
 -- Swap
@@ -107,9 +105,9 @@ loadfn2 fn g = do
 -- when done reading so I use hGetContents. -  Learn how to close???
 load2 fn g = E.bracket (openFile fn ReadMode) hClose $ \h -> do
     let msg = if zaccess g == 1 then fn ++ " READ ONLY" else fn
-    recs <- (fmap (T.lines) $ T.hGetContents h)
+    recs <- (fmap (B.lines) $ B.hGetContents h)
     p <- getFileMode fn
-    chk_winsize initGlobal{zfn=fn,zmsg=msg,zlist=toZlist recs,
+    chk_winsize initGlobal{zfn=fn,zmsg=msg,zlist=recs,
 		zlines=length recs,
 		zaccess=zaccess g,zhistory=zhistory g,zpager=True,
 		zfind=zfind g, zchange=zchange g,
@@ -165,7 +163,7 @@ saveorig g
 
 savef' g = do
     g' <- pline g
-    T.writeFile (zfn g') (T.unlines $ fromZlist (zlist g'))
+    B.writeFile (zfn g') (B.unlines (zlist g'))
     if (zstmode g') /= 0
 	then Ffi.setFileMode (zfn g') (zstmode g') 
 	else return 0
