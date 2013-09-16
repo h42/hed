@@ -16,6 +16,7 @@ import GetKB
 import Global
 import Func0
 import Ffi
+import Control.Monad
 
 chk_winsize g = do
     (rc,rows,cols) <- h_winsize
@@ -78,12 +79,8 @@ disppage :: Global -> IO Global
 disppage g = do
     g' <- (clrscr g >>= pline)
     let ls = getrows (ztop g') (zmaxy g' -1) g'
-    disppage2 ls (ztop g') g'
-
-disppage2 [] _ g = return g
-disppage2 (l:ls) i g= do
-    displine (tabexpand 0 l) i 0 g
-    disppage2 ls (i+1) g
+    forM_ (zip ls [ztop g ..]) (\(s,i)-> displine (tabexpand 0 s) i 0 g)
+    return g
 
 status g = do
     let s = show (zy g +1) ++ "," ++ show (zx g+1)
