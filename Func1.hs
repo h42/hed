@@ -40,6 +40,7 @@ import Hterm
 import GetKB
 import Display
 import Glob
+import qualified Data.ByteString.Char8 as B
 import Debug.Trace
 
 -- UPOFFX
@@ -318,16 +319,16 @@ hedFind1 g' = do
 	    sx = drop (zx g+1) (zbuf g)
 	if start >= 0 then
 	    return g{zx=zx g + 1 + start,zfindl=len}
-	else hedFind2 gl (zy g+1) g
+        else hedFind2 gl (zy g + 1) (drop (zy g + 1) (zlist g)) g
     else return g{zmsg="Find not primed"}
 
-hedFind2 gl y g = do
-    if y >= zlines g then return g{zmsg="Not found"}
-    else do
+hedFind2 :: Globs -> Int -> [B.ByteString] -> Global -> IO Global
+hedFind2 _ _ [] g = return g{zmsg="Not Found"}
+hedFind2 gl y (l:ls) g = do
 	let (start,len) = searchGlob gl sx
-	    sx = gline2 y g
+            sx = glineByte l
 	if start >= 0 then gline g{zx=start,zy=y,zfindl=len} >>= vupd
-	else hedFind2 gl (y+1) g
+        else hedFind2 gl (y+1) ls g
 
 initChange g = do
     s <- hed_request "Enter search string: " g

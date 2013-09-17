@@ -2,6 +2,7 @@ module Func0 (
     gline
     ,glineup
     ,gline2
+    ,glineByte
     ,pline
     ,pline2
     ,tabexpand
@@ -10,6 +11,7 @@ module Func0 (
 
 import Data.List
 import Global
+import qualified Data.ByteString.Char8 as B
 
 tabexpand :: Int -> String -> String
 tabexpand i [] = []
@@ -47,6 +49,8 @@ pline2 y b g = updrow y (tabcomp b) g
 
 gline2 :: Int -> Global -> String
 gline2 y g = tabexpand 0 (getrow y g)
+
+glineByte s = tabexpand 0 (B.unpack s)
 
 glineup g = gline g{zupd=1,zupd2=1}
 
