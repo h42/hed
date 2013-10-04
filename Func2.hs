@@ -83,10 +83,11 @@ kadj2 x g = do
     let l = zky2 g - zky1 g + 1
 	ks = getrows (zky1 g) l g
 	ks' | x > 0 = map
-	     (\k -> (tabcomp . ((replicate x ' ') ++) . (tabexpand 0)) k) ks
-	    | x < 0 = map (\k -> (tabcomp . drop (-x) . tabexpand 0) k) ks
+             (\k -> (tabcomp2 . ((replicate x ' ') ++) . (tabexpand 0)) k) ks
+            | x < 0 = map (\k -> (tabcomp2 . drop (-x) . tabexpand 0) k) ks
 	    | otherwise = ks
 	g' = (insrows (zky1 g) l ks' . delrows (zky1 g) l) g
+        tabcomp2 = if ztabcompress g then tabcomp else id
     gline g'{zcur= -1}
 
 -----------

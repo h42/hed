@@ -164,4 +164,3 @@ compGlob pat icase = reverse (comp2 pat []) where
 	where tempglob = compGlob (reverse tl) icase
     brace2 (x:xs) tl glls = brace2 xs (x:tl) glls
 
-
