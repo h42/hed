@@ -55,6 +55,7 @@ data Global = Global {
     ,zky1 :: Int
     ,zky2 :: Int
     ,zkh :: Int
+    ,zgo :: (Int,Int)
     ,zpager :: Bool
     ,zfind :: String
     ,zfindl :: Int
@@ -92,6 +93,7 @@ initGlobal = Global {
     ,zky1 = -1
     ,zky2 = -1
     ,zkh = 0
+    ,zgo = (0,0)
     ,zpager = False
     ,zfind = ""
     ,zfindl = -1

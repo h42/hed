@@ -151,6 +151,8 @@ trequest s x y z flag = do
 	KeyRight -> trequest s (if x<length s then x+1 else x) y z flag
 	KeyHome -> trequest s 0 y z flag
 	KeyEnd -> trequest s (length s) y z flag
+        -- if cntl char then return just char for go function marking
+        KeyCntl c -> return [c]
 	_ -> trequest s x y z flag
   where backspace =
 	    if x>0 then trequest (take (x-1) s ++ drop x s) (x-1) y z flag

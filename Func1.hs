@@ -98,9 +98,9 @@ split_line g = do
 go g' =  do
     g <- gline g'
     s <- hed_request "Enter line number: " g
-    if s=="" || all isDigit s == False
-	then return g
-	else vupd g { zy = min ((read s :: Int) - 1) (zlines g - 1) }
+    if s == "g" then upoff g{zx=fst $zgo g, zy=snd $zgo g,zpager=True} >>= vupd
+    else if s=="" || all isDigit s == False then return g
+    else vupd g { zy = min ((read s :: Int) - 1) (zlines g - 1) }
 
 -- HOMER
 homer g = upoff g{zx=0}
@@ -384,6 +384,7 @@ cntl_x' c g = do
 	'c' -> initChange g
 	'f' -> initFind (if isLower c then 1 else 0) g
 	'i' -> toggleIndent g
+        'g' -> return g {zgo=(zx g,zy g)}
 	'x' -> toggleCase g
 	_   -> return g{zmsg="Unknown x function"}
 
