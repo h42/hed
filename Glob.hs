@@ -127,6 +127,8 @@ compGlob :: String -> Int -> Globs
 compGlob pat icase = reverse (comp2 pat []) where
     comp2 :: String -> [Glob] -> [Glob]
     comp2 [] ans = ans
+    comp2 ['\\'] gs = (GlobC '\\' : gs)
+    comp2 ('\\':x:xs) gs = comp2 xs (GlobC x : gs)
     comp2 ('*':xs) gs = comp2 xs  (WildStar:gs)
     comp2 ('?':xs) gs = comp2 xs (WildDot:gs)
     comp2 ('[':xs) gs = comp2 ys gs' where
