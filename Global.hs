@@ -25,79 +25,79 @@ import Ffi
 --maybeRead = fmap fst . listToMaybe . filter (null . snd) . reads
 
 data Global = Global {
-    zx :: Int
-    ,zy :: Int
-    ,zrc :: Int
+    zaccess :: Int
     ,zbuf :: String
     ,zbufl :: Int
-    ,zlist :: [B.ByteString]
-    ,zkplist :: [B.ByteString]
+    ,zchange :: String
     ,zcur :: Int
-    ,zupd :: Int
-    ,zupd2 :: Int
-    ,zlines :: Int
-    ,zins :: Bool
-    ,ztop :: Int
-    ,zoff :: Int
-    ,zmaxy :: Int
-    ,zmaxx :: Int
-    ,zmsg :: String
-    ,zindentnl :: Bool
-    ,ztabcompress :: Bool
-    ,zaccess :: Int
+    ,zfind :: String
+    ,zfindl :: Int
     ,zfn :: String
     ,zfnsaved :: Int
-    ,zstmode :: Int
     ,zglobals :: [Global]
+    ,zgo :: (Int,Int)
     ,zhistory :: [History]
+    ,zindentnl :: Bool
+    ,zins :: Bool
+    ,zkh :: Int
+    ,zkplist :: [B.ByteString]
     ,zkx1 :: Int
     ,zkx2 :: Int
     ,zky1 :: Int
     ,zky2 :: Int
-    ,zkh :: Int
-    ,zgo :: (Int,Int)
+    ,zlines :: Int
+    ,zlist :: [B.ByteString]
+    ,zmaxy :: Int
+    ,zmaxx :: Int
+    ,zmsg :: String
+    ,zoff :: Int
     ,zpager :: Bool
-    ,zfind :: String
-    ,zfindl :: Int
-    ,zchange :: String
+    ,zrc :: Int
+    ,zstmode :: Int
+    ,ztabcompress :: Bool
+    ,ztop :: Int
+    ,zupd :: Int
+    ,zupd2 :: Int
+    ,zx :: Int
+    ,zy :: Int
 } deriving (Show)
 
 initGlobal = Global {
-    zx = 0
-    ,zy = 0
-    ,zrc = 0
+    zaccess = 0
     ,zbuf = ""
     ,zbufl = 0
-    ,zlist = []
-    ,zkplist = []
+    ,zchange = ""
     ,zcur = -1
-    ,zupd = 0
-    ,zupd2 = 0
-    ,zlines = 0
-    ,zins = True
-    ,ztop = 0
-    ,zoff = 0
-    ,zmaxy = 24
-    ,zmaxx = 80
-    ,zmsg = ""
-    ,zindentnl = True
-    ,ztabcompress = True
-    ,zaccess = 0
+    ,zfind = ""
+    ,zfindl = -1
     ,zfn = ""
     ,zfnsaved = 0
-    ,zstmode = 0
     ,zglobals = []
+    ,zgo = (0,0)
     ,zhistory = []
+    ,zindentnl = True
+    ,zins = True
+    ,zkh = 0
+    ,zkplist = []
     ,zkx1 = -1
     ,zkx2 = -1
     ,zky1 = -1
     ,zky2 = -1
-    ,zkh = 0
-    ,zgo = (0,0)
+    ,zlist = []
+    ,zlines = 0
+    ,zmaxy = 24
+    ,zmaxx = 80
+    ,zmsg = ""
+    ,zoff = 0
     ,zpager = False
-    ,zfind = ""
-    ,zfindl = -1
-    ,zchange = ""
+    ,zrc = 0
+    ,zstmode = 0
+    ,ztabcompress = True
+    ,ztop = 0
+    ,zupd = 0
+    ,zupd2 = 0
+    ,zx = 0
+    ,zy = 0
 }
 
 getrows :: Int -> Int -> Global -> [String]
