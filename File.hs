@@ -18,24 +18,25 @@ module File (
 import Global
 import GetKB
 import Func1
-import Data.Char
-import Data.Maybe
 import Func0
 import Display
 import Getfn
+
+import qualified Control.Exception as E
+import Control.Monad
+import qualified Data.ByteString.Char8 as B
+import Data.Char
+import Data.Maybe
 import Data.List
+import Ffi
 import System.Posix.Files
+import System.Posix.User
 import System.IO
 import System.IO.Error
 import System.Directory (doesDirectoryExist, doesFileExist,
 			 getCurrentDirectory, getDirectoryContents)
-import Ffi
 import System.Environment
 import System.Cmd
-import Control.Monad
-import qualified Control.Exception as E
-
-import qualified Data.ByteString.Char8 as B
 
 ---------------------------------------------------------
 -- New - not really a file but no better place for it
@@ -104,15 +105,22 @@ loadfn2 fn g = do
 -- readFile function holds open lock on fn preventing updates even
 -- when done reading so I use hGetContents. -  Learn how to close???
 load2 fn g = E.bracket (openFile fn ReadMode) hClose $ \h -> do
+    bigrec <- B.hGetContents h
     let msg = if zaccess g == 1 then fn ++ " READ ONLY" else fn
-    recs <- (fmap (B.lines) $ B.hGetContents h)
+    let ro = B.any (\c->badchar c) bigrec
+        recs = if not ro then B.lines bigrec
+               else B.lines (B.map (\c->if badchar c then '~' else c) bigrec)
     p <- getFileMode fn
     chk_winsize initGlobal{zfn=fn,zmsg=msg,zlist=recs,
 		zlines=length recs,
 		zaccess=zaccess g,zhistory=zhistory g,zpager=True,
 		zfind=zfind g, zchange=zchange g,
-		zkplist=zkplist g,zstmode=p}
+                zkplist=zkplist g, zstmode=p, zro=ro}
 	>>= fromHistory  >>= addHistory >>= chkBottom >>= chktype >>= gline
+
+badchar c
+    | (c>=' ' && ord c < 128) || c=='\n' || c=='\r' || c=='\t'  = False
+    | otherwise = True
 
 chktype :: Global -> IO Global
 chktype g
@@ -132,7 +140,7 @@ checkupd g
 	case s of
 	    "y" -> savef g
 	    "n" -> return g
-	    _ -> checkupd g
+            _   -> checkupd g
 
 ---------------------------------------------------------
 -- Save
@@ -140,7 +148,7 @@ checkupd g
 savef :: Global -> IO Global
 savef g
     | zupd2 g == 0 = return g
-    | zaccess g == 1 = return g{zmsg="FILE IS READ ONLY"}
+    | zaccess g == 1 || zro g = return g{zmsg="FILE IS READ ONLY"}
     | zfn g == "" = do
 	s <- hed_request "Enter file name to save: " g
 	if s=="" then  return g{zmsg="File not saved"}
@@ -173,8 +181,9 @@ savef' g = do
 -- HOMEFILE
 -------------------------------------
 homeFile fn = do
-    home <- catchIOError (getEnv "HOME")
-			 (\e -> return "")
+    home <- catchIOError (
+        fmap homeDirectory $ getEffectiveUserID >>= getUserEntryForID )
+        (\e -> return "")
     case home of
 	"" -> return ""
 	_  -> do

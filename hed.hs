@@ -98,7 +98,7 @@ mainloop' kc g = do
 	KeyAlt 'q'  -> cleanup g
 	KeyAlt 'r'  -> getHistory g >>=  mainloop
 	KeyAlt 's'  -> savef g >>= mainloop
-	--KeyAlt 't'  -> tester g >>= mainloop
+        KeyAlt 't'  -> tester g >>= mainloop
 
 	KeyNone     -> chk_winsize g >>= mainloop
 
@@ -118,9 +118,13 @@ make g = do
     loadfn homefn g
 
 tester g = do
+    {-
     fn <- getHistoryFn
     clrscr g
     putStrLn fn
     getkb
-    return g
+    -}
+    h <- homeFile "xxx"
+    return $ g{zmsg=h}
+
 

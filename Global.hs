@@ -53,6 +53,7 @@ data Global = Global {
     ,zoff :: Int
     ,zpager :: Bool
     ,zrc :: Int
+    ,zro :: Bool
     ,zstmode :: Int
     ,ztabcompress :: Bool
     ,ztop :: Int
@@ -91,6 +92,7 @@ initGlobal = Global {
     ,zoff = 0
     ,zpager = False
     ,zrc = 0
+    ,zro = False
     ,zstmode = 0
     ,ztabcompress = True
     ,ztop = 0
