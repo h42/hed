@@ -11,8 +11,8 @@ module Func2 (
 import Data.Char
 import System.IO
 import Global
-import GetKB
 import Display
+import HTerm
 import Func0
 
 cntl_k :: Global -> IO Global

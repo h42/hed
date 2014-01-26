@@ -7,8 +7,7 @@ import Data.List
 import System.IO
 import System.Directory (doesDirectoryExist, doesFileExist,
 			 getCurrentDirectory, getDirectoryContents)
-import Hterm
-import GetKB
+import HTerm
 
 --main = do
 --    f <- getfn [".hs","makefile"]

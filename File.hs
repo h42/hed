@@ -16,7 +16,7 @@ module File (
 ) where
 
 import Global
-import GetKB
+import HTerm
 import Func1
 import Func0
 import Display

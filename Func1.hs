@@ -36,8 +36,7 @@ import Data.Maybe
 import Global
 import Func0
 import Func2
-import Hterm
-import GetKB
+import HTerm
 import Display
 import Glob
 import qualified Data.ByteString.Char8 as B

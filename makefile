@@ -3,10 +3,12 @@ CLG = $(HSFLAGS) --make  # -threaded -rtsopts #-static
 
 CFLAGS=-Wall
 
-OBJS=GetKB.o Glob.o Ffi.o Global.o Func0.o Hterm.o Display.o Func2.o Func1.o\
- Getfn.o File.o
+OBJS=HTermDefs.o HTerm.o Glob.o Ffi.o Global.o Func0.o Display.o\
+ Func2.o Func1.o Getfn.o File.o
 
-PROGS=bad hed kb htest chktabs pretty #Tglob
+PROGS=hed # kb htest chktabs pretty #Tglob
+
+hed:hed.hs $(OBJS)
 
 
 %.o : %.hs
@@ -28,7 +30,7 @@ install:
 	install -m755 -ojerry -gjerry hed /usr/local/bin/hed
 	install -m755 -ojerry -gjerry hed /usr/local/bin/e
 	#install -m755 -ojerry -gjerry chktabs /usr/local/bin/chktabs
-	install -m755 -ojerry -gjerry pretty /usr/local/bin/pretty
+	#install -m755 -ojerry -gjerry pretty /usr/local/bin/pretty
 
 clean:
 	-rm *.hi *.o $(PROGS)

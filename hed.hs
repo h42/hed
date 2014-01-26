@@ -9,8 +9,7 @@ import System.Posix.Signals.Exts
 import Debug.Trace
 
 import Global
-import GetKB
-import Hterm
+import HTerm
 import Display
 import Func0
 import Func1

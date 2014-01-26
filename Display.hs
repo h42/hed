@@ -11,8 +11,7 @@ module Display (
     )  where
 
 import System.IO
-import Hterm
-import GetKB
+import HTerm
 import Global
 import Func0
 import Ffi
