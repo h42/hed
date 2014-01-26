@@ -134,10 +134,17 @@ ins_char' c g
 	let x = if xd<0 then (zx g)   else xd
 	    l = zbufl g
 	    buf = zbuf g
-	    xbuf = c : (drop x buf)
+            (n,xbuf) = ins_char2 c x buf
 	    buf' = take x buf ++ xbuf
 	displine xbuf (zy g) (x) g
-	upoff g{zbuf = buf',zx=x+1,zbufl=l+1}
+        upoff g{zbuf = buf',zx=x+1,zbufl=l+n}
+
+ins_char2 c x buf
+    | x == 0 = (1, c : drop x buf)
+    | c == '"' && c0 /= '"' = (2, '"' : '"' : xbuf)
+    | c == '(' = (2, '(': ')' : xbuf)
+    | otherwise = (1, c : xbuf)
+  where (c0:xbuf) = drop (x-1) buf
 
 find_open y st g
     | y < 0 = 0
