@@ -1,5 +1,5 @@
 import System.IO
-import GetKB
+import HTerm
 import Data.Char
 import Foreign
 import Foreign.C.Types
