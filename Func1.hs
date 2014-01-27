@@ -139,9 +139,9 @@ ins_char' c g
         upoff g{zbuf = buf',zx=x+1,zbufl=l+n}
 
 ins_char2 c x buf
-    | x == 0 = (1, c : drop x buf)
-    | c == '"' && c0 /= '"' = (2, '"' : '"' : xbuf)
-    | c == '(' = (2, '(': ')' : xbuf)
+    | x == 0 = (1, c : buf)
+    -- | c == '"' && c0 /= '"' = (2, '"' : '"' : xbuf)
+    -- | c == '(' = (2, '(': ')' : xbuf)
     | otherwise = (1, c : xbuf)
   where (c0:xbuf) = drop (x-1) buf
 

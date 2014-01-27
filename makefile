@@ -1,13 +1,10 @@
 HSFLAGS =  -fwarn-name-shadowing -XBangPatterns -XOverloadedStrings
-CLG = $(HSFLAGS) --make  # -threaded -rtsopts #-static
+CLG = $(HSFLAGS) --make # -threaded -rtsopts #-static
 
 CFLAGS=-Wall
 
-PROGS=hed kb # kb htest chktabs pretty #Tglob
-
-ALL:hed kb
-
-hed:hed.hs # $(OBJS)
+HEDFILES=hed.hs Glob.hs Ffi.hs Global.hs Func2.hs Func0.hs Func1.hs\
+ HTerm.hs HTermDefs.hs Display.hs Getfn.hs File.hs
 
 %.o : %.hs
 	ghc -c $(HSFLAGS) -o $@ $<
@@ -15,14 +12,15 @@ hed:hed.hs # $(OBJS)
 % : %.hs
 	ghc $(CLG) -o $@ $<
 
+PROGS=hed #kb # kb htest chktabs pretty #Tglob
+
 .PHONY:all install
 
-all:$(PROGS)
+hed:hed.hs $(HEDFILES)
+	ghc $(CLG) -o hed hed.hs ffilib.o
+
 
 htest:htest.hs Glob.hs
-
-hed:hed.hs ffilib.o $(OBJS)
-	ghc $(CLG) -o $@ $< ffilib.o
 
 install:
 	install -m755 -ojerry -gjerry hed /usr/local/bin/hed

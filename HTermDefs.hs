@@ -8,9 +8,9 @@ module HTermDefs (
 import System.Environment
 import System.IO.Unsafe
 
-(fkey,zzztop) = case maybeTerm of
-    Just "linux" -> (linux_key,0)
-    _     -> (xterm_key,1)
+(fkey,hterm) = case maybeTerm of
+    Just "linux" -> (linux_key,linux_term)
+    _     -> (xterm_key,xterm_term)
 
 maybeTerm = unsafePerformIO $ lookupEnv "TERM"
 
@@ -104,8 +104,35 @@ data Hterm = Hterm {
     ,at_exit    :: String
 }
 
-hterm = Hterm {
+xterm_term = Hterm {
      t_rows = 24
+    ,t_cols = 80
+    ,t_clrscr = "\x1b[H\x1b[2J"
+    ,t_cup  =   "\x1b[%d;%dH"
+    ,t_eol      = "\x1b[K"
+    ,t_eos      = "\x1b[J"
+    ,t_del_line = "\x1b[M"
+    ,t_ins_line = "\x1b[L"
+    ,t_clr_scr  = "\x1b[H\x1b[2J"
+    ,t_bg       = "\x1b[0;40m"
+    ,t_fg       = "\x1b[m" -- exit att mode
+    ,t_fg0      = "\x1b[1;30m"
+    ,t_fg1      = "\x1b[0;31m"
+    ,t_fg2      = "\x1b[0;32m"
+    ,t_fg3      = "\x1b[0;33m"
+    ,t_fg4      = "\x1b[0;34m"
+    ,t_fg5      = "\x1b[0;35m"
+    ,t_fg6      = "\x1b[0;36m"
+    ,t_fg7      = "\x1b[0;30m"
+    ,at_reverse = "\x1b[7m"
+    ,at_bold    = "\x1b[1m"
+    ,at_underline = "\x1b[4m"
+    ,at_blink   = "\x1b[5m"
+    ,at_exit    = "\x1b[m" -- exit att mode
+  }
+
+linux_term = Hterm {
+     t_rows = 25
     ,t_cols = 80
     ,t_clrscr = "\x1b[H\x1b[2J"
     ,t_cup  =   "\x1b[%d;%dH"
