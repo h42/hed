@@ -65,7 +65,7 @@ access fn g = do
 	if b' then return g{zaccess=3}
 	else do
 	    b <- fileAccess fn True False False
-	    if b  then return g{zaccess=1}  else return g{zaccess=0}
+            if b  then return g{zaccess=1,zro=True}  else return g{zaccess=0}
 
 getsuffix :: String -> String -> String
 getsuffix [] y = y
