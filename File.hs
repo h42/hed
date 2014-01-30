@@ -148,7 +148,7 @@ checkupd g
 savef :: Global -> IO Global
 savef g
     | zupd2 g == 0 = return g
-    | zaccess g == 1 || zro g = return g{zmsg="FILE IS READ ONLY"}
+    | zro g = return g{zmsg="FILE IS READ ONLY"}
     | zfn g == "" = do
 	s <- hed_request "Enter file name to save: " g
 	if s=="" then  return g{zmsg="File not saved"}
