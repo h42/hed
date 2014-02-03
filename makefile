@@ -16,7 +16,7 @@ PROGS=hed #kb # kb htest chktabs pretty #Tglob
 
 .PHONY:all install
 
-hed:hed.hs $(HEDFILES)
+hed:hed.hs $(HEDFILES) ffilib.o
 	ghc $(CLG) -o hed hed.hs ffilib.o
 
 
