@@ -56,16 +56,16 @@ swapf n g = do
 ---------------------------------------------------------
 -- Load
 ---------------------------------------------------------
-access :: String -> Global -> IO Global
-access fn g = do
+access :: String -> IO Int
+access fn = do
     b'' <- fileExist fn
-    if not b'' then return g{zaccess= -1}
+    if not b'' then return (-1)
     else do
 	b' <- fileAccess fn True True False
-	if b' then return g{zaccess=3}
+        if b' then return 3
 	else do
 	    b <- fileAccess fn True False False
-            if b  then return g{zaccess=1,zro=True}  else return g{zaccess=0}
+            if b  then return 1 else return 0
 
 getsuffix :: String -> String -> String
 getsuffix [] y = y
@@ -78,7 +78,6 @@ loadf g = do
     --let fn="temp"
     if null fn
 	then do
-	    --fn' <- getfn [".hs","makefile"]
 	    fn' <- getfn (zmaxy g) [getsuffix (zfn g) []]
 	    if null fn'
 		then return g{zmsg="Load cancelled",zpager=True}
@@ -93,10 +92,11 @@ loadfn fn g = do
 	Right g' -> return g'
 
 loadfn2 fn g = do
-    g1 <- (addHistory g >>= checkupd  >>= access fn)
-    let hs = if (zaccess g1) <= 0  then rmHistory fn (zhistory g1)
+    g1 <- addHistory g >>= checkupd
+    acc <- access fn
+    let hs = if (acc) <= 0  then rmHistory fn (zhistory g1)
 	     else zhistory g1
-    if (zaccess g1) > 0  then load2 fn g1
+    if (acc) > 0  then load2 fn g1{zro=if acc==1 then True else False}
     else if null $ zfn g1 then do
 	g2 <- newf g1
 	return g2{zpager=True,zmsg="Unable to access file "++fn,zfn=fn}
@@ -106,16 +106,16 @@ loadfn2 fn g = do
 -- when done reading so I use hGetContents. -  Learn how to close???
 load2 fn g = E.bracket (openFile fn ReadMode) hClose $ \h -> do
     bigrec <- B.hGetContents h
-    let msg = if zaccess g == 1 then fn ++ " READ ONLY" else fn
+    let msg = if zro g then fn ++ " READ ONLY" else fn
     let ro = B.any (\c->badchar c) bigrec
         recs = if not ro then B.lines bigrec
                else B.lines (B.map (\c->if badchar c then '~' else c) bigrec)
     p <- getFileMode fn
     chk_winsize initGlobal{zfn=fn,zmsg=msg,zlist=recs,
 		zlines=length recs,
-		zaccess=zaccess g,zhistory=zhistory g,zpager=True,
+                zhistory=zhistory g,zpager=True,
 		zfind=zfind g, zchange=zchange g,
-                zkplist=zkplist g, zstmode=p, zro=ro}
+                zkplist=zkplist g, zstmode=p, zro=if ro then True else zro g}
 	>>= fromHistory  >>= addHistory >>= chkBottom >>= chktype >>= gline
 
 badchar c

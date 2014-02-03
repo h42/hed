@@ -25,8 +25,7 @@ import Ffi
 --maybeRead = fmap fst . listToMaybe . filter (null . snd) . reads
 
 data Global = Global {
-    zaccess :: Int
-    ,zbuf :: String
+    zbuf :: String
     ,zbufl :: Int
     ,zchange :: String
     ,zcur :: Int
@@ -64,8 +63,7 @@ data Global = Global {
 } deriving (Show)
 
 initGlobal = Global {
-    zaccess = 0
-    ,zbuf = ""
+    zbuf = ""
     ,zbufl = 0
     ,zchange = ""
     ,zcur = -1
