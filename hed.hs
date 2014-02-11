@@ -38,7 +38,6 @@ mainloop g = do
     status g
     goto g
     hFlush stdout
-
     kc <- getkb
     mainloop' kc g{zmsg="",zglobals=take 32 (g:zglobals g),zpager=False}
 
