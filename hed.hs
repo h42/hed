@@ -68,11 +68,14 @@ mainloop' kc g = do
             KeyAlt 'n'  ->  checkupd g >>= newf >>= addHistory
                                        >>= disppage >>= mainloop
             KeyAlt 'q'  -> cleanup g
+
+            KeyNone     -> chk_winsize g >>= mainloop
             _ -> mainloop g{zmsg="File is read only - not allowed"}
 
     else do
         case kc of
-            KeyChar c -> mainloop =<< if zins g  then ins_char c g  else add_char c g
+            KeyChar c -> mainloop =<<
+                if zins g  then ins_char c g  else add_char c g
             KeyEnd  -> ender g >>= mainloop
             KeyHome -> homer g >>= mainloop
             KeyDel  -> del_char g >>= mainloop
@@ -98,9 +101,10 @@ mainloop' kc g = do
             KeyCntl 'j' -> enter g >>= mainloop
             KeyCntl 'k' -> cntl_k g >>= mainloop
             KeyCntl 'n' -> ins_line g >>= mainloop
-            KeyCntl 't' -> top g >>= mainloop
+            KeyCntl 'o' -> loadf g >>= mainloop
             KeyCntl 'q' -> cleanup g
             KeyCntl 's' -> savef g >>= mainloop
+            KeyCntl 't' -> top g >>= mainloop
             KeyCntl 'u' -> undo g >>= mainloop
             KeyCntl 'x' -> cntl_x g >>= mainloop
     
@@ -109,7 +113,7 @@ mainloop' kc g = do
             KeyFunc 8   ->  swapf 2 g >>=  mainloop
             KeyFunc 9   ->  swapf 1 g >>=  mainloop
             KeyFunc 10  ->  loadf g >>= mainloop
-            KeyFunc 11  ->  savef g >>= mainloop
+            --KeyFunc 11  ->  savef g >>= mainloop
             KeyFunc 12  ->  cleanup g
     
             KeyAlt 'f'  ->  loadf g >>= mainloop
@@ -120,9 +124,8 @@ mainloop' kc g = do
             KeyAlt 'r'  -> getHistory g >>=  mainloop
             KeyAlt 's'  -> savef g >>= mainloop
             KeyAlt 't'  -> tester g >>= mainloop
-    
+
             KeyNone     -> chk_winsize g >>= mainloop
-    
             _           -> mainloop g
 
 cleanup :: Global -> IO ()
