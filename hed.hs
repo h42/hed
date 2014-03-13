@@ -65,6 +65,7 @@ mainloop' kc g = do
             KeyFunc 10  ->  loadf g >>= mainloop
             KeyFunc 12  ->  cleanup g
             KeyAlt 'f'  ->  loadf g >>= mainloop
+            KeyAlt 'h'  ->  loadf g >>= mainloop
             KeyAlt 'n'  ->  checkupd g >>= newf >>= addHistory
                                        >>= disppage >>= mainloop
             KeyAlt 'q'  -> cleanup g
@@ -101,9 +102,7 @@ mainloop' kc g = do
             KeyCntl 'j' -> enter g >>= mainloop
             KeyCntl 'k' -> cntl_k g >>= mainloop
             KeyCntl 'n' -> ins_line g >>= mainloop
-            KeyCntl 'o' -> loadf g >>= mainloop
             KeyCntl 'q' -> cleanup g
-            KeyCntl 's' -> savef g >>= mainloop
             KeyCntl 't' -> top g >>= mainloop
             KeyCntl 'u' -> undo g >>= mainloop
             KeyCntl 'x' -> cntl_x g >>= mainloop
@@ -116,7 +115,8 @@ mainloop' kc g = do
             --KeyFunc 11  ->  savef g >>= mainloop
             KeyFunc 12  ->  cleanup g
     
-            KeyAlt 'f'  ->  loadf g >>= mainloop
+            KeyAlt 'o'  ->  loadf g >>= mainloop
+            KeyAlt 'h'  ->  help g >>= mainloop
             KeyAlt 'm'  ->  savef g{zpager=True} >>= make >>= mainloop
             KeyAlt 'n'  ->  checkupd g >>= newf >>= addHistory
                                        >>= disppage >>= mainloop
@@ -132,6 +132,13 @@ cleanup :: Global -> IO ()
 cleanup g = do
     addHistory g >>= writeHistory >>= checkupd >>= clrscr
     return ()
+
+help g = do
+    tclrscr
+    putStr $ zfn g
+    hFlush stdout
+    getChar
+    disppage g
 
 make g = do
     clrscr g
