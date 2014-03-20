@@ -124,6 +124,7 @@ mainloop' kc g = do
             KeyAlt 'r'  -> getHistory g >>=  mainloop
             KeyAlt 's'  -> savef g >>= mainloop
             KeyAlt 't'  -> tester g >>= mainloop
+            KeyAlt 'w'  -> swapf 1 g >>= mainloop
 
             KeyNone     -> chk_winsize g >>= mainloop
             _           -> mainloop g
