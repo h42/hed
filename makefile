@@ -1,5 +1,5 @@
 HSFLAGS =  -O -fwarn-name-shadowing -XBangPatterns -XOverloadedStrings
-CLG = $(HSFLAGS) --make # -dynamic -threaded -rtsopts #-static
+CLG = $(HSFLAGS) --make  # -dynamic -threaded -rtsopts #-static
 
 CFLAGS=-Wall
 
@@ -17,7 +17,7 @@ PROGS=hed #kb # kb htest chktabs pretty #Tglob
 .PHONY:all install
 
 hed:hed.hs $(HEDFILES) ffilib.o
-	ghc $(CLG) -o hed hed.hs ffilib.o
+	ghc $(CLG)  -o hed hed.hs ffilib.o
 
 
 htest:htest.hs Glob.hs
