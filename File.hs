@@ -15,28 +15,28 @@ module File (
     ,getHistoryFn
 ) where
 
-import Global
-import HTerm
+import Display
+import Ffi
 import Func1
 import Func0
-import Display
 import Getfn
+import Global
+import HTerm
 
 import qualified Control.Exception as E
 import Control.Monad
 import qualified Data.ByteString.Char8 as B
 import Data.Char
-import Data.Maybe
 import Data.List
-import Ffi
-import System.Posix.Files
-import System.Posix.User
-import System.IO
-import System.IO.Error
+import Data.Maybe
 import System.Directory (doesDirectoryExist, doesFileExist,
 			 getCurrentDirectory, getDirectoryContents)
 import System.Environment
-import System.Cmd
+import System.IO
+import System.IO.Error
+import System.Posix.Files
+import System.Posix.User
+import System.Process
 
 ---------------------------------------------------------
 -- New - not really a file but no better place for it

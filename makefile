@@ -3,7 +3,7 @@ CLG = $(HSFLAGS) --make  # -dynamic -threaded -rtsopts #-static
 
 CFLAGS=-Wall
 
-HEDFILES=hed.hs Glob.hs Ffi.hs Global.hs Func2.hs Func0.hs Func1.hs\
+HEDFILES=hed.hs Glob.hs Ffi.hs Global.hs Func2.hs Vi.hs Func0.hs Func1.hs\
  HTerm.hs HTermDefs.hs Display.hs Getfn.hs File.hs
 
 %.o : %.hs

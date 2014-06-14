@@ -2,18 +2,20 @@ import Data.Char
 import Control.Exception
 import System.IO
 import System.Environment
-import System.Cmd
-import System.Timeout
 import System.Posix.Signals
 import System.Posix.Signals.Exts
+import System.Process
+import System.Timeout
 import Debug.Trace
 
+-- Leave import order alone
 import Global
 import HTerm
 import Display
 import Func0
 import Func1
 import Func2
+import Vi
 import File
 
 main = do
@@ -105,6 +107,7 @@ mainloop' kc g = do
             KeyCntl 'q' -> cleanup g
             KeyCntl 't' -> top g >>= mainloop
             KeyCntl 'u' -> undo g >>= mainloop
+            KeyCntl 'v' -> cntl_v g >>= mainloop
             KeyCntl 'x' -> cntl_x g >>= mainloop
     
             KeyFunc 5   ->  hedFind g >>=  mainloop

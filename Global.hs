@@ -58,6 +58,8 @@ data Global = Global {
     ,ztop :: Int
     ,zupd :: Int
     ,zupd2 :: Int
+    ,zvi :: Bool
+    ,zvstate :: Int
     ,zx :: Int
     ,zy :: Int
 } deriving (Show)
@@ -96,6 +98,8 @@ initGlobal = Global {
     ,ztop = 0
     ,zupd = 0
     ,zupd2 = 0
+    ,zvi = False
+    ,zvstate = 0
     ,zx = 0
     ,zy = 0
 }
