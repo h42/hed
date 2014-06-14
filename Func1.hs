@@ -1,46 +1,46 @@
 module Func1 (
-    ender
-    ,enter
-    ,go
-    ,homer
-    ,add_char
+     add_char
+    ,bottom
     ,bs_char
-    ,ins_char
+    ,btab_char
+    ,cntl_x
     ,del_char
     ,del_line
-    ,erase_eol
-    ,ins_line
-    ,indent
-    ,tab_char
-    ,btab_char
-    ,right
-    ,left
-    ,up
     ,down
-    ,scroll
+    ,ender
+    ,enter
+    ,erase_eol
+    ,go
+    ,hedChange
+    ,hedFind
+    ,homer
+    ,indent
+    ,initChange
+    ,initFind
+    ,ins_char
+    ,ins_key
+    ,ins_line
+    ,left
     ,pgup
     ,pgdown
-    ,bottom
+    ,right
+    ,scroll
+    ,tab_char
     ,top
-    ,ins_key
-    ,initFind
-    ,hedFind
-    ,initChange
-    ,hedChange
-    ,cntl_x
+    ,up
 ) where
 
-import Data.List
+import qualified Data.ByteString.Char8 as B
 import Data.Char
+import Data.List
 import Data.Maybe
+
+import Display
+import Glob
 import Global
 import Func0
 import Func2
 import HTerm
-import Display
-import Glob
-import qualified Data.ByteString.Char8 as B
-import Debug.Trace
 
 -- UPOFFX
 upoff :: Global -> IO Global

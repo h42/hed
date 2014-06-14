@@ -1,8 +1,8 @@
 module HTermDefs (
-    KeyCode (..)
-    ,fkey
+    fkey
     ,Hterm (..)
     ,hterm
+    ,KeyCode (..)
     ) where
 
 import System.Environment

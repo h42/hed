@@ -10,12 +10,12 @@ module Display (
     ,chk_winsize
     )  where
 
-import System.IO
-import HTerm
-import Global
-import Func0
-import Ffi
 import Control.Monad
+import System.IO
+import Ffi
+import Func0
+import Global
+import HTerm
 
 chk_winsize g = do
     (rc,rows,cols) <- h_winsize
