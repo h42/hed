@@ -12,6 +12,7 @@ import Debug.Trace
 import Global
 import HTerm
 import Display
+import Find
 import Func0
 import Func1
 import Func2

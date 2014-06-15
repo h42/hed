@@ -3,7 +3,6 @@ module Func1 (
     ,bottom
     ,bs_char
     ,btab_char
-    ,cntl_x
     ,del_char
     ,del_line
     ,down
@@ -11,12 +10,8 @@ module Func1 (
     ,enter
     ,erase_eol
     ,go
-    ,hedChange
-    ,hedFind
     ,homer
     ,indent
-    ,initChange
-    ,initFind
     ,ins_char
     ,ins_key
     ,ins_line
@@ -28,19 +23,17 @@ module Func1 (
     ,tab_char
     ,top
     ,up
+    ,vupd
 ) where
 
-import qualified Data.ByteString.Char8 as B
 import Data.Char
 import Data.List
 import Data.Maybe
 
 import Display
-import Glob
 import Global
 import Func0
 import Func2
-import HTerm
 
 -- UPOFFX
 upoff :: Global -> IO Global
@@ -305,6 +298,7 @@ top2 g = return g{zx=0,zy=0,ztop=0,zoff=0,zpager=True}
 ----------------------
 -- Find / Update
 ----------------------
+{-
 initFind icase g = do
     s <- hed_request "Enter search string: " g
     if s == "" then return g
@@ -373,24 +367,5 @@ toggleCase' g
 toggleIndent g = return g{zindentnl=ind, zmsg=msg} where
     ind = not $ zindentnl g
     msg = "indent set to " ++ show ind
-
--------------------------------
--- CNTL_X
--------------------------------
-cntl_x :: Global -> IO Global
-cntl_x g = do
-    k <- getkb
-    case k of
-	KeyChar c -> cntl_x' c g
-	KeyCntl c -> cntl_x' c g
-	_ -> return g{zmsg="Unknown k function"}
-
-cntl_x' c g = do
-    case toLower c of
-	'c' -> initChange g
-	'f' -> initFind (if isLower c then 1 else 0) g
-	'i' -> toggleIndent g
-        'g' -> return g {zgo=(zx g,zy g)}
-	'x' -> toggleCase g
-	_   -> return g{zmsg="Unknown x function"}
+-}
 
