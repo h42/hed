@@ -24,6 +24,7 @@ module Func1 (
     ,top
     ,up
     ,vupd
+    ,word
 ) where
 
 import Data.Char
@@ -295,77 +296,15 @@ top :: Global -> IO Global
 top g = pline g >>= top2 >>= gline
 top2 g = return g{zx=0,zy=0,ztop=0,zoff=0,zpager=True}
 
-----------------------
--- Find / Update
-----------------------
-{-
-initFind icase g = do
-    s <- hed_request "Enter search string: " g
-    if s == "" then return g
-    else do
-	let gl = compGlob s icase
-	if (gl) == [] then return g{zmsg="Invalid search string",zfind=""}
-	else do
-	    putGlob gl
-	    gline g{zfind=s} >>= hedFind
-
-hedFind g = pline g >>= hedFind1
-
-hedFind1 g' = do
-    g <- gline g'
-    gl <- getGlob
-    if gl /= [] then do
-	let (start,len) = searchGlob gl sx
-	    sx = drop (zx g+1) (zbuf g)
-	if start >= 0 then
-	    return g{zx=zx g + 1 + start,zfindl=len}
-        else hedFind2 gl (zy g + 1) (drop (zy g + 1) (zlist g)) g
-    else return g{zmsg="Find not primed"}
-
-hedFind2 :: Globs -> Int -> [B.ByteString] -> Global -> IO Global
-hedFind2 _ _ [] g = return g{zmsg="Not Found"}
-hedFind2 gl y (l:ls) g = do
-	let (start,len) = searchGlob gl sx
-            sx = glineByte l
-	if start >= 0 then gline g{zx=start,zy=y,zfindl=len} >>= vupd
-        else hedFind2 gl (y+1) ls g
-
-initChange g = do
-    s <- hed_request "Enter search string: " g
-    if s == "" then return g
-    else do
-	let gl = compGlob s 0
-	if gl == [] then return g{zmsg="Invalid search string",zfind=""}
-	else do
-	    putGlob gl
-	    cs <- hed_request "Enter replace string: " g
-	    if cs == "" then return g{zmsg="Change cancelled"}
-	    else return g{zfind=s,zchange=cs}
-
-hedChange g'
-    | zfind g' == "" || zchange g' == ""  =  return g'{zmsg="Change not primed"}
-    | otherwise = do
-	g <- gline g'
-	gl <- getGlob
-	let s = drop (zx g) (zbuf g)
-	    rc = matchGlobx gl s 1
-	if rc < 0 then return g{zmsg="Find required"}
-	else do
-	    let clen = length s - rc
-		buf = take (zx g) (zbuf g) ++ (zchange g) ++ drop (zx g + clen) (zbuf g)
-	    displine (drop (zx g) buf) (zy g) (zx g)
-		g{zbuf=buf,zbufl=length buf,zmsg="Changed"}
-		>>= glineup
-
-toggleCase g  = glineup g >>= toggleCase'
-toggleCase' g  
-    | zx g >= zbufl g = return g
-    | otherwise = do
-	let c  = (zbuf g) !! (zx g)
-	add_char (if isLower c then toUpper c else toLower c) g 
-
-toggleIndent g = return g{zindentnl=ind, zmsg=msg} where
-    ind = not $ zindentnl g
-    msg = "indent set to " ++ show ind
--}
-
+-- WORD / BWORD
+word :: Global -> IO Global
+word g = case (findIndex (==' ') (drop ((zx g)+1) (zbuf g))) of
+             Just x' -> word' (x'+(zx g)+1) g
+             Nothing -> word2 g
+word' x g = case (findIndex (/=' ') (drop x (zbuf g))) of
+                Just x' -> upoff g{zx=x'+x}
+                Nothing -> word2 g
+word2 g = if (zy g)+1 >= zlines g then return g
+          else homer g >>= down >>= word3
+word3 g = if head (zbuf g) == ' ' then word g
+          else return g

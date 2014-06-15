@@ -110,6 +110,7 @@ mainloop' kc g = do
             KeyCntl 'u' -> undo g >>= mainloop
             KeyCntl 'v' -> cntl_v g >>= mainloop
             KeyCntl 'x' -> cntl_x g >>= mainloop
+            KeyCntl 'w' -> word g >>= mainloop
     
             KeyFunc 5   ->  hedFind g >>=  mainloop
             KeyFunc 6   ->  hedChange g >>=  mainloop
