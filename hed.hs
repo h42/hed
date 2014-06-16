@@ -42,7 +42,6 @@ mainloop g = do
     kc <- getkb
     mainloop' kc g{zmsg="",zglobals=take 32 (g:zglobals g),zpager=False}
 
-
 undo g
     | length (zglobals g) < 2 = return g
     | otherwise = return (head $ tail (zglobals g)){zpager=True}
@@ -110,6 +109,7 @@ mainloop' kc g = do
             KeyCntl 'x' -> cntl_x g >>= mainloop
             KeyCntl 'w' -> word g >>= mainloop
     
+            KeyFunc 1   ->  help g >>=  mainloop
             KeyFunc 5   ->  hedFind g >>=  mainloop
             KeyFunc 6   ->  hedChange g >>=  mainloop
             KeyFunc 8   ->  swapf 2 g >>=  mainloop
@@ -139,7 +139,8 @@ cleanup g = do
 
 help g = do
     tclrscr
-    putStr $ zfn g
+    putStrLn $ "HED V1.0\n"
+    putStrLn $ "Current file = " ++ zfn g
     hFlush stdout
     getChar
     disppage g

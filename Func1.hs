@@ -3,6 +3,7 @@ module Func1 (
     ,bottom
     ,bs_char
     ,btab_char
+    ,bword
     ,del_char
     ,del_line
     ,down
@@ -306,5 +307,15 @@ word' x g = case (findIndex (/=' ') (drop x (zbuf g))) of
                 Nothing -> word2 g
 word2 g = if (zy g)+1 >= zlines g then return g
           else homer g >>= down >>= word3
-word3 g = if head (zbuf g) == ' ' then word g
+word3 g = if (not $ null (zbuf g)) && head (zbuf g) == ' ' then word g
           else return g
+
+-- WORD / BWORD
+bword :: Int -> Global -> IO Global
+bword n g
+    | (zx g) > 0 && take (zx g) (zbuf g) /= take (zx g) (repeat ' ')
+        = upoff g{zx=length xs}
+    | zy g > 0 && n/=0 = up g >>= ender >>= bword (n-1)
+    | otherwise = upoff g{zx=0}
+  where
+    xs = dropWhile (/=' ') $ dropWhile (==' ') $ reverse $ take (zx g) (zbuf g)
