@@ -37,10 +37,8 @@ main = do
 
 mainloop :: Global -> IO ()
 mainloop g = do
-    if zpager g then pline g >>= disppage else return g
-    status g
-    goto g
-    hFlush stdout
+    if zpager g  then pline g >>= disppage  else return g
+    status g -- does Hflush
     kc <- getkb
     mainloop' kc g{zmsg="",zglobals=take 32 (g:zglobals g),zpager=False}
 
@@ -108,7 +106,7 @@ mainloop' kc g = do
             KeyCntl 'q' -> cleanup g
             KeyCntl 't' -> top g >>= mainloop
             KeyCntl 'u' -> undo g >>= mainloop
-            KeyCntl 'v' -> cntl_v g >>= mainloop
+            KeyCntl 'v' -> cntl_v g{zvi=True,zmsg="vi mode"} >>= mainloop
             KeyCntl 'x' -> cntl_x g >>= mainloop
             KeyCntl 'w' -> word g >>= mainloop
     

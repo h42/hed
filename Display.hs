@@ -87,17 +87,15 @@ status g = do
 	x = zmaxx g - length s
     tgoto (zmaxy g -1) 0
     tclreol
-    if not $ null (zmsg g)
-     then  do
+    when (not $ null (zmsg g)) $ do
 	 tattr Cyan
 	 putStr $ zmsg g
 	 tattr Norm
-     else return ()
-    if x >= 0
-     then do
+    when (x >= 0) $ do
 	tgoto (zmaxy g -1) x
 	putStr s
-     else return ()
+    goto g
+    hFlush stdout
 
 ----------------------------------------------
 -- REQUEST
