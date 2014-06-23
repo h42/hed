@@ -4,8 +4,10 @@ module Func1 (
     ,bs_char
     ,btab_char
     ,bword
+    ,del_bword
     ,del_char
     ,del_line
+    ,del_word
     ,down
     ,ender
     ,enter
@@ -319,3 +321,21 @@ bword n g
     | otherwise = upoff g{zx=0}
   where
     xs = dropWhile (/=' ') $ dropWhile (==' ') $ reverse $ take (zx g) (zbuf g)
+
+-- DEL WORD
+del_word :: Global -> IO Global
+del_word g = glineup g >>= del_word2
+del_word2 g
+    | zx g >= zbufl g = return g
+    | otherwise = do
+        let b = take (zx g) (zbuf g) ++ (dropWhile isSpace $ dropWhile (not.isSpace) $ drop (zx g) (zbuf g))
+        displine (drop (zx g) b) (zy g) (zx g) g{zbuf=b,zbufl=length b}
+
+del_bword :: Global -> IO Global
+del_bword g = glineup g >>= del_bword2
+del_bword2 g
+    | zx g <= 0 = return g
+    | otherwise = do
+        let l = reverse $ dropWhile (not.isSpace) $ dropWhile (isSpace) $ reverse $ take (zx g) (zbuf g)
+            b = l ++ (drop (zx g) (zbuf g))
+        displine b (zy g) 0 g{zx=length l, zbuf=b, zbufl=length b}

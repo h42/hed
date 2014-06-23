@@ -32,7 +32,9 @@ getcmd0 cnt cmd g = do
 getcmd cnt' cmd g = do
     let cnt = if cnt'>0 then cnt' else 1
     case cmd of
+        "a" -> commander 1 return g{zins=True,zvi=False,zx=(zx g)+1}
         "h" -> commander cnt left g
+        "i" -> commander 1 return g{zins=True,zvi=False}
         "l" -> commander cnt right g
         "j" -> commander cnt down g
         "k" -> commander cnt up g
@@ -40,7 +42,7 @@ getcmd cnt' cmd g = do
         "b" -> commander cnt (bword 1) g
         "0" -> commander cnt homer g
         "$" -> commander cnt ender g
-        _ -> return g{zmsg="Unknown V function"}
+        _   -> return g{zmsg="Unknown V function"}
 
 commander 0 _ g = return g
 commander cnt f g = do

@@ -22,10 +22,8 @@ import File
 main = do
     g' <- readHistory initGlobal
     args <- getArgs
-    g <- if length args > 0 then
-	     loadfn (head args) g'
-	 else if fnHistory 0 g' /= "" then
-	     loadfn (fnHistory 0 g') g'
+    g <- if length args > 0 then loadfn (head args) g'
+         else if fnHistory 0 g' /= "" then loadfn (fnHistory 0 g') g'
 	 else newf g'
     disppage g
 
@@ -102,7 +100,9 @@ mainloop' kc g = do
             KeyCntl 'j' -> enter g >>= mainloop
             KeyCntl 'k' -> cntl_k g >>= mainloop
             KeyCntl 'n' -> ins_line g >>= mainloop
+            KeyCntl 'o' -> loadf g >>= mainloop
             KeyCntl 'q' -> cleanup g
+            KeyCntl 's' -> savef g >>= mainloop
             KeyCntl 't' -> top g >>= mainloop
             KeyCntl 'u' -> undo g >>= mainloop
             KeyCntl 'v' -> cntl_v g{zvi=True,zmsg="vi mode"} >>= mainloop
@@ -114,10 +114,13 @@ mainloop' kc g = do
             KeyFunc 6   ->  hedChange g >>=  mainloop
             KeyFunc 8   ->  swapf 2 g >>=  mainloop
             KeyFunc 9   ->  swapf 1 g >>=  mainloop
-            KeyFunc 10  ->  loadf g >>= mainloop
-            --KeyFunc 11  ->  savef g >>= mainloop
             KeyFunc 12  ->  cleanup g
     
+            KeyAlt '1'  ->  help g >>=  mainloop
+            KeyAlt '5'  ->  hedFind g >>=  mainloop
+            KeyAlt '6'  ->  hedChange g >>=  mainloop
+            KeyAlt '8'  ->  swapf 2 g >>=  mainloop
+            KeyAlt '9'  ->  swapf 1 g >>=  mainloop
             KeyAlt 'o'  ->  loadf g >>= mainloop
             KeyAlt 'h'  ->  help g >>= mainloop
             KeyAlt 'm'  ->  savef g{zpager=True} >>= make >>= mainloop
@@ -127,7 +130,6 @@ mainloop' kc g = do
             KeyAlt 'r'  -> getHistory g >>=  mainloop
             KeyAlt 's'  -> savef g >>= mainloop
             KeyAlt 't'  -> tester g >>= mainloop
-            KeyAlt 'w'  -> swapf 1 g >>= mainloop
 
             KeyNone     -> chk_winsize g >>= mainloop
             _           -> mainloop g
@@ -154,13 +156,6 @@ make g = do
     loadfn homefn g
 
 tester g = do
-    {-
-    fn <- getHistoryFn
-    clrscr g
-    putStrLn fn
-    getkb
-    -}
-    h <- homeFile "xxx"
-    return $ g{zmsg=h}
+    del_bword g
 
 
