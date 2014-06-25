@@ -38,11 +38,7 @@ mainloop g = do
     if zpager g  then pline g >>= disppage  else return g
     status g -- does Hflush
     kc <- getkb
-    mainloop' kc g{zmsg="",zglobals=take 32 (g:zglobals g),zpager=False}
-
-undo g
-    | length (zglobals g) < 2 = return g
-    | otherwise = return (head $ tail (zglobals g)){zpager=True}
+    mainloop' kc g{zmsg="", zglobals=updGlobals g, zpager=False}
 
 mainloop' kc g = do
     --kc <- getkb

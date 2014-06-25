@@ -25,6 +25,7 @@ module Func1 (
     ,scroll
     ,tab_char
     ,top
+    ,undo
     ,up
     ,vupd
     ,word
@@ -298,6 +299,10 @@ bottom2 g = do
 top :: Global -> IO Global
 top g = pline g >>= top2 >>= gline
 top2 g = return g{zx=0,zy=0,ztop=0,zoff=0,zpager=True}
+
+undo g
+    | length (zglobals g) < 2 = return g
+    | otherwise = return (head $ tail (zglobals g)){zpager=True}
 
 -- WORD / BWORD
 word :: Global -> IO Global

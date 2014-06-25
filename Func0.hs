@@ -7,11 +7,14 @@ module Func0 (
     ,pline2
     ,tabexpand
     ,tabcomp
+    ,updGlobals
 ) where
 
 import Data.List
 import Global
 import qualified Data.ByteString.Char8 as B
+
+updGlobals g = take 32 (g:zglobals g)
 
 tabexpand :: Int -> String -> String
 tabexpand i [] = []
