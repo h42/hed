@@ -24,20 +24,22 @@ cntl_k g = do
 	_ -> return g{zmsg="Unknown k function"}
 
 cntl_k' c g = do
-    case toLower c of
-	'b' -> cntl_kb g
-	'c' -> cntl_kc g
-	'd' -> cntl_kd g
-	'h' -> cntl_kh g
-	'k' -> cntl_kk g
-	'l' -> cntl_kl g
-	'p' -> cntl_kp g
-	's' -> cntl_ks g
-	'v' -> cntl_kv g
-	'>' -> cntl_kadj 1 g
-	'<' -> cntl_kadj (-1) g
-	'?' -> cntl_kdisp g
-	_   -> return g{zmsg="Unknown k function"}
+    if isDigit c then cntl_kyy False (ord c - ord '0') g
+    else if c=='-' then cntl_kyy True 0 g
+    else case toLower c of
+            'b' -> cntl_kb g
+            'c' -> cntl_kc g
+            'd' -> cntl_kd g
+            'h' -> cntl_kh g
+            'k' -> cntl_kk g
+            'l' -> cntl_kl g
+            'p' -> cntl_kp g
+            's' -> cntl_ks g
+            'v' -> cntl_kv g
+            '>' -> cntl_kadj 1 g
+            '<' -> cntl_kadj (-1) g
+            '?' -> cntl_kdisp g
+            _   -> return g{zmsg="Unknown k function"}
 
 maxcol = 999999999 :: Int
 
@@ -62,6 +64,20 @@ cntl_kh g
     | zky1 g /= zky2 g || zkx1 g > 0 || zkx2 g > zbufl g
 	 = return g{zkh=1,zmsg="Block on",zpager=True}
     | otherwise = return g{zkh=2,zmsg="Block on",zpager=True}
+
+cntl_kyy False x g = goodblk g{zky1=zy g, zky2=zy g + x-1, zkx1=0, zkx2=0, zpager=True}
+cntl_kyy True _ g = do
+    k <- getkb
+    case k of
+        KeyChar c -> f c
+        KeyCntl c -> f c
+	_ -> return g{zmsg="Unknown k function"}
+
+  where f c' = if isDigit c' then do
+                   let x = ord c' - ord '0'
+                   goodblk g{zky2=zy g, zky1=max 0 (zy g - (x-1)), zkx1=0, zkx2=0, zpager=True}
+               else return g{zmsg="bad k cnt"}
+
 
 -----------
 -- CNTL_KADJ
