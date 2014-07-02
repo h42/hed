@@ -73,7 +73,7 @@ indent g = gline g >>= \g' -> return g'{zx=x} where
     x = firstnb_r (zy g) g
 
 -- ENDER
-ender g = gline g{zx=zbufl g} >>= upoff
+ender g = gline g >>= \g' -> return g'{zx=zbufl g'} >>= upoff
 
 -- ENTER
 enter g'

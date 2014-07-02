@@ -26,6 +26,7 @@ cntl_x g = do
 	KeyCntl c -> cntl_x' c g
 	_ -> return g{zmsg="Unknown k function"}
 
+cntl_x' :: Char -> Global -> IO Global
 cntl_x' c g = do
     case toLower c of
 	'c' -> initChange g
@@ -38,6 +39,7 @@ cntl_x' c g = do
 ----------------------
 -- Find / Update
 ----------------------
+initFind :: Int -> Global -> IO Global
 initFind icase g = do
     s <- hed_request "Enter search string: " g
     if s == "" then return g
@@ -48,8 +50,10 @@ initFind icase g = do
 	    putGlob gl
 	    gline g{zfind=s} >>= hedFind
 
+hedFind :: Global -> IO Global
 hedFind g = pline g >>= hedFind1 >>= gline
 
+hedFind1 :: Global -> IO Global
 hedFind1 g' = do
     g <- gline g'
     gl <- getGlob
@@ -69,6 +73,7 @@ hedFind2 gl y (l:ls) g = do
 	if start >= 0 then gline g{zx=start,zy=y,zfindl=len} >>= vupd
         else hedFind2 gl (y+1) ls g
 
+initChange :: Global -> IO Global
 initChange g = do
     s <- hed_request "Enter search string: " g
     if s == "" then return g
@@ -81,6 +86,7 @@ initChange g = do
 	    if cs == "" then return g{zmsg="Change cancelled"}
 	    else return g{zfind=s,zchange=cs}
 
+hedChange :: Global -> IO Global
 hedChange g'
     | zfind g' == "" || zchange g' == ""  =  return g'{zmsg="Change not primed"}
     | otherwise = do
@@ -96,13 +102,15 @@ hedChange g'
 		g{zbuf=buf,zbufl=length buf,zmsg="Changed"}
 		>>= glineup
 
-toggleCase g  = glineup g >>= toggleCase'
-toggleCase' g  
-    | zx g >= zbufl g = return g
-    | otherwise = do
-	let c  = (zbuf g) !! (zx g)
-	add_char (if isLower c then toUpper c else toLower c) g 
+toggleCase :: Global -> IO Global
+toggleCase g'  = glineup g' >>= toggleCase'  where
+    toggleCase' g  
+        | zx g >= zbufl g = return g
+        | otherwise = do
+            let c  = (zbuf g) !! (zx g)
+            add_char (if isLower c then toUpper c else toLower c) g 
 
+toggleIndent :: Global -> IO Global
 toggleIndent g = return g{zindentnl=ind, zmsg=msg} where
     ind = not $ zindentnl g
     msg = "indent set to " ++ show ind

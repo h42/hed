@@ -16,8 +16,7 @@ import Data.Char
 import Data.List
 import System.IO.Unsafe
 import Data.IORef
-import System.Directory (doesDirectoryExist, doesFileExist,
-			 getCurrentDirectory, getDirectoryContents)
+import System.Directory (doesDirectoryExist, getDirectoryContents)
 
 data Glob = GlobC Char
 	    | GlobSet String
@@ -62,6 +61,7 @@ fnGlob2 dir glob = do
       map (\x -> if dir /= "."   then dir ++ "/" ++ x   else x) 
 	(filter (\f -> notElem f [".",".."] && matchGlob glob f == 0) dc)
 
+splitPat :: String -> (String, String)
 splitPat s = (d,p) where
     ps = elemIndices '/' s
     (d,p) = if null ps then ("",s) 
@@ -92,6 +92,7 @@ searchGlob zgls zxs = (x,res) where
 -- returns -1 for fail, 0 for full match, +n for partial match (SHORTEST)
 -- flag parm  for partial match - used by search
 --
+matchGlob :: Globs -> String -> Int
 matchGlob g s = matchGlobx g s 0
 
 matchGlobx :: Globs -> String -> Int -> Int
@@ -104,9 +105,10 @@ matchGlobx mgls mxs flag = glob2 mgls mxs where
     glob2 _ [] = -1
     glob2 [] xs = if flag == 1 then length xs else -1
     glob2 ((GlobC c):gs) (x:xs) = if (c == x) then glob2 gs xs else -1
-    glob2 (WildDot:gs) (x:xs) = glob2 gs xs
+    glob2 (WildDot:gs) (_:xs) = glob2 gs xs
     glob2 ((GlobSet s):gs) (x:xs) = if elem x s then glob2 gs xs else -1
     glob2 ((GlobNot s):gs) (x:xs) = if notElem x s then glob2 gs xs else -1
+    glob2 _ _ = -1
 
     -- WildStar
     --glob3 gs [] rc = False
@@ -146,7 +148,7 @@ compGlob pat icase = reverse (comp2 pat []) where
 	| otherwise = GlobC x
 
     bracket :: String -> String -> (String,Glob)
-    bracket [] bs = ([],GlobErr)
+    bracket [] _ = ([],GlobErr)
     bracket (']':xs) bs = (xs,gs) where
         bs2 = reverse bs
         gs = if (head bs2) == '!' then GlobNot (tail bs2) else GlobSet bs2
@@ -157,7 +159,7 @@ compGlob pat icase = reverse (comp2 pat []) where
     brace xs = brace2 xs [] []
     
     brace2 :: String -> String -> [[Glob]] -> (String,Glob)
-    brace2 [] tl glls = ([],GlobErr)
+    brace2 [] _ _ = ([],GlobErr)
     brace2 ( '}':xs ) tl glls =  (xs,glls') where
 	tempglob = compGlob (reverse tl) icase
         glls' = if tempglob == [] then GlobErr else (GlobBrace (glls ++ [tempglob]))
