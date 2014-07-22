@@ -23,7 +23,6 @@ module HTerm (
 
 import Foreign.C.Types
 import Data.Char
-import Data.Array
 import System.IO
 import HTermDefs
 import System.Posix.IO
@@ -78,7 +77,7 @@ tputs s y x = do
     if y>=0 then tgoto y x else return ()
     tout s
 
-tsetbg x = tout $ t_bg hterm
+tsetbg = tout $ t_bg hterm
 
 tscroll x = do
     tgoto 0 0
@@ -93,6 +92,7 @@ type Kdict = [Kitem]
 
 foreign import ccall "getchar"  getchar :: IO CInt
 
+getkb :: IO KeyCode
 getkb = do
     -- use ffi to prevent exception for alt chars (>=128) on
     -- archlinux xterm
@@ -120,22 +120,21 @@ getkb2 fs sx = do
             (_,KeyNone)  ->  getkb2 fs' (sx')
             _  ->  return match
     
+data Checkrc = GOODRC | BADRC | MAYBERC
 checkFkey :: Kdict -> String -> Kdict -> (Kdict,KeyCode)
-checkFkey [] xs newdict = (newdict,KeyNone)
+checkFkey [] _ newdict = (newdict,KeyNone)
 checkFkey (k:ks) xs newdict = case rc of
-	1 ->  ((k:newdict),snd k)
-	-1 -> checkFkey ks xs newdict
-	0 -> checkFkey ks xs (newdict++[k])
+        GOODRC ->  ((k:newdict),snd k)
+        BADRC -> checkFkey ks xs newdict
+        MAYBERC -> checkFkey ks xs (newdict++[k])
     where rc = check2 (fst k) xs
 
 -- we should not need "check2 [] _" as xs grows from [x] in call from checkFkey
-check2 [] [] = 1
-check2 _ [] = 0
-check2 (k:ks) (x:xs) = if k == x then check2 ks xs else -1
-
-clearout = do
-    getchar
-    clearout
+check2 :: String -> String -> Checkrc
+check2 [] [] = GOODRC
+check2 _ [] = MAYBERC
+check2 (k:ks) (x:xs) = if k == x then check2 ks xs else BADRC
+check2 _ _ = undefined
 
 mkchar c
     | oc == 127 = KeyBs
@@ -157,6 +156,7 @@ openkb = do
 closekb tc = setTerminalAttributes stdInput tc Immediately
 
 
+trequest :: String -> Int -> Int -> Int -> Int -> IO String
 trequest s x y z flag = do
     tgoto y z
     putStr s

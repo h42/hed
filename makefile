@@ -1,4 +1,5 @@
-HSFLAGS =  -O -fwarn-name-shadowing -Wall
+--HSFLAGS =  -O -Wall -fno-warn-missing-signatures -fno-warn-unused-do-bind
+HSFLAGS =  -O -Wall -fno-warn-unused-do-bind
 CLG = $(HSFLAGS) --make  # -dynamic -threaded -rtsopts #-static
 
 CFLAGS=-Wall

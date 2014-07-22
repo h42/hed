@@ -24,14 +24,10 @@ import Global
 import HTerm
 
 import qualified Control.Exception as E
-import Control.Monad
 import qualified Data.ByteString.Char8 as B
 import Data.Char
-import Data.List
 import Data.Maybe
-import System.Directory (doesDirectoryExist, doesFileExist,
-			 getCurrentDirectory, getDirectoryContents)
-import System.Environment
+import System.Directory (getCurrentDirectory)
 import System.IO
 import System.IO.Error
 import System.Posix.Files
@@ -48,6 +44,7 @@ newf g = chk_winsize initGlobal
 ---------------------------------------------------------
 -- Swap
 ---------------------------------------------------------
+swapf :: Int -> Global -> IO Global
 swapf n g = do
     let fn = fnHistory n g
     if fn /= "" then loadfn fn g -- loadfn will checkupd
@@ -69,8 +66,8 @@ access fn = do
 
 getsuffix :: String -> String -> String
 getsuffix [] y = y
-getsuffix ('.':xs) y = getsuffix xs xs
-getsuffix (x:xs) y = getsuffix xs y
+getsuffix ('.':xs) _ = getsuffix xs xs
+getsuffix (_:xs) y = getsuffix xs y
 
 loadf :: Global -> IO Global
 loadf g = do
@@ -84,13 +81,15 @@ loadf g = do
 		else loadfn fn' g
 	else loadfn fn g
 
+loadfn :: String -> Global -> IO Global
 loadfn fn g = do
-    (rc2,fn') <- h_readlink fn -- rc>0 for symlink ; we do nothing with this info
+    (_,fn') <- h_readlink fn -- rc>0 for symlink ; we do nothing with this info
     rc <- E.try (loadfn2 fn' g) :: IO (Either E.SomeException Global)
     case rc of
 	Left e -> return g{zmsg=show e}
 	Right g' -> return g'
 
+loadfn2 :: String -> Global -> IO Global
 loadfn2 fn g = do
     g1 <- addHistory g >>= checkupd
     acc <- access fn
@@ -104,6 +103,7 @@ loadfn2 fn g = do
 
 -- readFile function holds open lock on fn preventing updates even
 -- when done reading so I use hGetContents. -  Learn how to close???
+load2 :: FilePath -> Global -> IO Global
 load2 fn g = E.bracket (openFile fn ReadMode) hClose $ \h -> do
     bigrec <- B.hGetContents h
     let msg = if zro g then fn ++ " READ ONLY" else fn
@@ -118,6 +118,7 @@ load2 fn g = E.bracket (openFile fn ReadMode) hClose $ \h -> do
                 zkplist=zkplist g, zstmode=p, zro=if ro then True else zro g}
 	>>= fromHistory  >>= addHistory >>= chkBottom >>= chktype >>= gline
 
+badchar :: Char -> Bool
 badchar c
     | (c>=' ' && ord c < 128) || c=='\n' || c=='\r' || c=='\t'  = False
     | otherwise = True
@@ -127,12 +128,14 @@ chktype g
     | any ((zfn g)==) ["makefile","Makefile"] = return g{ztabcompress=True}
     | otherwise = return g{ztabcompress=False}
 
+chkBottom :: Global -> IO Global
 chkBottom g = if zy g < zlines g then return g
 	      else bottom g
 
 ---------------------------------------------------------
 -- Checkupd
 ---------------------------------------------------------
+checkupd :: Global -> IO Global
 checkupd g
     | zupd2 g == 0 = return g
     | otherwise = do
@@ -157,7 +160,7 @@ savef g
 	(saveorig g >>= savef')
 	(\e->return g{zmsg=show e}) -- (e::E.IOException)})
 
-
+saveorig :: Global -> IO Global
 saveorig g
     | zfnsaved g == 1 = return g
     | otherwise = do
@@ -169,6 +172,7 @@ saveorig g
 		system cmd2
 		return g{zfnsaved=1}
 
+savef' :: Global -> IO Global
 savef' g = do
     g' <- pline g
     B.writeFile (zfn g') (B.unlines (zlist g'))
@@ -180,10 +184,11 @@ savef' g = do
 -------------------------------------
 -- HOMEFILE
 -------------------------------------
+homeFile :: [Char] -> IO [Char]
 homeFile fn = do
     home <- catchIOError (
         fmap homeDirectory $ getEffectiveUserID >>= getUserEntryForID )
-        (\e -> return "")
+        (\_e -> return "")
     case home of
 	"" -> return ""
 	_  -> do
@@ -196,11 +201,13 @@ homeFile fn = do
 maybeRead :: Read a => String -> Maybe a
 maybeRead = fmap fst . listToMaybe . filter (null . snd) . reads
 
+getHistoryFn :: IO [Char]
 getHistoryFn = do
     cdir <- getCurrentDirectory
     let fn = map (\x -> if x == '/' then '_' else x) cdir
     homeFile fn
 
+addHistory :: Global -> IO Global
 addHistory g = do
     let h = mkHistory g
     let hs = if (zfn g) /= ""  then h:rmHistory (zfn g) (zhistory g)
@@ -215,10 +222,10 @@ fromHistory g = do
     let h' = filter (\h -> (hfn h) == zfn g) (zhistory g)
     case h' of
 	[] -> return g
-	(h:hs) -> return g{zx=hx h,zy=hy h,zoff=hoff h,ztop=htop h}
+        (h:_) -> return g{zx=hx h,zy=hy h,zoff=hoff h,ztop=htop h}
 
 rmHistory :: String -> [History] -> [History]
-rmHistory fn [] = []
+rmHistory _ [] = []
 rmHistory fn hs = filter (\h -> (hfn h) /= fn) hs
 
 fnHistory :: Int -> Global -> String
@@ -226,6 +233,7 @@ fnHistory n g = s where
     hs = fnsHistory g
     s = if length hs > n then hs !! n else ""
 
+fnsHistory :: Global -> [String]
 fnsHistory g = map (\h -> hfn h) (zhistory g)
 
 --
@@ -244,14 +252,14 @@ readHistory g = catchIOError
 		    Nothing  -> []
 	return g{zhistory=hs}
     )
-    (\e -> return g{zhistory=[]})
+    (\_ -> return g{zhistory=[]})
 
 writeHistory :: Global -> IO Global
 writeHistory g = do
     fn <- getHistoryFn
     catchIOError
 	(writeFile fn (show (zhistory g)) >> return g)
-	(\e -> return g)
+        (\_ -> return g)
 
 --
 -- GETHISTORY - Alt R Command
@@ -261,11 +269,10 @@ getHistory g = do
     let fns = map (\h -> (hfn h)) (take 20 (zhistory g))
     if fns == [] then return g  else geth fns g
 
+geth :: [[Char]] -> Global -> IO Global
 geth fns g = do
-    let l = length fns
-	sx = zipWith (\x y -> (show x) ++ ". " ++ y) [1..] (take 10 fns)
+    let sx = zipWith (\x y -> (show x) ++ ". " ++ y) ([1..] :: [Int]) (take 10 fns)
     clrscr g
-    --print $ zhistory g
     putStrLn ""
     mapM_ putStrLn sx
     putStr "\nSelect file: "
@@ -274,6 +281,7 @@ geth fns g = do
     hFlush stdout
     geth2 kc g
 
+geth2 :: KeyCode -> Global -> IO Global
 geth2 (KeyChar k) g = if k>='0' && k<='9'
 	then swapf (ord k - ord '0' - 1) g{zpager=True}
 	else return g{zmsg="got char",zpager=True}

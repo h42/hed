@@ -10,7 +10,7 @@ import Foreign
 import Foreign.C.Types
 import Foreign.C.String
 -- import Foreign.Ptr
-import Foreign.Marshal.Array
+--import Foreign.Marshal.Array
 
 --
 -- WIN_SIZE - Passes int ptr so we can return multiple ints

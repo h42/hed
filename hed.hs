@@ -1,12 +1,9 @@
-import Data.Char
 import Control.Exception
 import System.IO
 import System.Environment
 import System.Posix.Signals
 import System.Posix.Signals.Exts
 import System.Process
-import System.Timeout
-import Debug.Trace
 
 -- Leave import order alone
 import Global
@@ -19,6 +16,7 @@ import Func2
 import Vi
 import File
 
+main :: IO ()
 main = do
     g' <- readHistory initGlobal
     args <- getArgs
@@ -40,6 +38,7 @@ mainloop g = do
     kc <- getkb
     mainloop' kc g{zmsg="", zglobals=updGlobals g, zpager=False}
 
+mainloop' :: KeyCode -> Global -> IO ()
 mainloop' kc g = do
     --kc <- getkb
     if zro g then do
@@ -135,6 +134,7 @@ cleanup g = do
     addHistory g >>= writeHistory >>= checkupd >>= clrscr
     return ()
 
+help :: Global -> IO Global
 help g = do
     tclrscr
     putStrLn $ "HED V1.0\n"
@@ -143,6 +143,7 @@ help g = do
     getChar
     disppage g
 
+make :: Global -> IO Global
 make g = do
     clrscr g
     hFlush stdout
@@ -151,6 +152,7 @@ make g = do
     system $ "make 2>&1 | tee " ++ homefn
     loadfn homefn g
 
+tester :: Global -> IO Global
 tester g = do
     del_bword g
 
